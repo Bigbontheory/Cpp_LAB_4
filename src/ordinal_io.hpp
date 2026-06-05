@@ -3,7 +3,7 @@
 #include "Ordinal.hpp"
 #include <iostream>
 
-std::ostream& operator<<(std::ostream& os, const Ordinal& ord) {
+ inline std::ostream& operator<<(std::ostream& os, const Ordinal& ord) {
 	if (ord.get_omega_count() > 0) {
 		if (ord.get_omega_count() > 1) {
 			os << "w*" << ord.get_omega_count();

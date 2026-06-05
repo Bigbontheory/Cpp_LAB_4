@@ -23,6 +23,7 @@ public:
 		return Ordinal(1, 0);
 	}
 
+	bool is_infinite() const { return omega_count > 0; }
 	bool is_finite() const { return omega_count == 0; }
 
 	std::size_t get_omega_count() const {
@@ -30,6 +31,14 @@ public:
 	}
 
 	std::size_t get_finite_part() const {
+		return finite_part;
+	}
+
+	std::size_t get_value() const {
+		if (omega_count > 0)
+		{
+			throw std::invalid_argument("cannot get integer value in infinite ordinal");
+		}
 		return finite_part;
 	}
 
