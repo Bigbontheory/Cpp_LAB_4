@@ -10,12 +10,10 @@ private:
 
 public:
 	Ordinal() : omega_count(0), finite_part(0) {}
-	explicit Ordinal(std::size_t finite) : omega_count(0), finite_part(finite) {
-		if (finite < 0) throw std::invalid_argument("Ordinal parts cannot be negative");
-	}
+	explicit Ordinal(std::size_t finite) : omega_count(0), finite_part(finite) {}
 
 	Ordinal(std::size_t omega, std::size_t finite) : omega_count(omega), finite_part(finite) {
-		if (omega < 0 || finite < 0) throw std::invalid_argument("Ordinal parts cannot be negative");
+
 	}
 
 	static Ordinal omega()
@@ -24,7 +22,6 @@ public:
 	}
 
 	bool is_infinite() const { return omega_count > 0; }
-	bool is_finite() const { return omega_count == 0; }
 
 	std::size_t get_omega_count() const {
 		return omega_count;
@@ -35,9 +32,9 @@ public:
 	}
 
 	std::size_t get_value() const {
-		if (omega_count > 0)
+		if (is_infinite())
 		{
-			throw std::invalid_argument("cannot get integer value in infinite ordinal");
+			throw std::logic_error("cannot get integer value in infinite ordinal");
 		}
 		return finite_part;
 	}
@@ -66,7 +63,7 @@ public:
 	}
 
 	Ordinal operator+(const Ordinal& other) const {
-		if (other.omega_count > 0) {
+		if (other.is_infinite()) {
 			return Ordinal(this->omega_count + other.omega_count, other.finite_part);
 		}
 		else {

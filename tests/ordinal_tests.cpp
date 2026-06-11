@@ -7,28 +7,28 @@ TEST(OrdinalTest, DefaultConstructor) {
     Ordinal ord;
     EXPECT_EQ(ord.get_omega_count(), 0);
     EXPECT_EQ(ord.get_finite_part(), 0);
-    EXPECT_TRUE(ord.is_finite());
+    EXPECT_FALSE(ord.is_infinite());
 }
 
 TEST(OrdinalTest, FiniteConstructor) {
     Ordinal ord(42);
     EXPECT_EQ(ord.get_omega_count(), 0);
     EXPECT_EQ(ord.get_finite_part(), 42);
-    EXPECT_TRUE(ord.is_finite());
+    EXPECT_FALSE(ord.is_infinite());
 }
 
 TEST(OrdinalTest, FullConstructor) {
     Ordinal ord(2, 7);
     EXPECT_EQ(ord.get_omega_count(), 2);
     EXPECT_EQ(ord.get_finite_part(), 7);
-    EXPECT_FALSE(ord.is_finite());
+    EXPECT_TRUE(ord.is_infinite()); 
 }
 
 TEST(OrdinalTest, StaticOmega) {
     Ordinal ord = Ordinal::omega();
     EXPECT_EQ(ord.get_omega_count(), 1);
     EXPECT_EQ(ord.get_finite_part(), 0);
-    EXPECT_FALSE(ord.is_finite());
+    EXPECT_TRUE(ord.is_infinite());  
 }
 
 TEST(OrdinalTest, EqualityOperators) {

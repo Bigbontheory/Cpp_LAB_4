@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include "ienumerable.hpp"
 #include "icollection.hpp"
-#include "sequencebuilder.hpp"
 #include "option.hpp"
 
 
@@ -36,7 +35,6 @@ public:
 	
 	virtual IEnumerator<T>* get_enumerator() const override = 0;
 	
-	virtual ISequenceBuilder<T>* create_builder() const = 0;
 };
 
 #include "sequence.tpp"

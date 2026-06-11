@@ -23,9 +23,9 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(ordinal_tests "tests/ordinal_tests.cpp" "tests/function_generator_tests.cpp")
+add_executable(tests "tests/ordinal_tests.cpp" "tests/function_generator_tests.cpp")
 
-target_link_libraries(ordinal_tests PRIVATE ordinal gtest_main)
+target_link_libraries(tests PRIVATE ordinal gtest_main)
 
 include(GoogleTest)
-gtest_discover_tests(ordinal_tests)
+gtest_discover_tests(tests)
