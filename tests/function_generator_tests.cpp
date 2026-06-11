@@ -66,3 +66,36 @@ TEST_F(FunctionGeneratorTest, CloneCreatesIndependentCopy) {
 
     delete cloned;
 }
+
+TEST_F(FunctionGeneratorTest, GetByOrdinalReturnsCorrectValue) {
+    Ordinal length(10);
+    FunctionGenerator<int> gen(my_test_function, length);
+
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(0)), 0);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(5)), 50);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(9)), 90);
+}
+
+TEST_F(FunctionGeneratorTest, GetByOrdinalThrowsOutOfRange) {
+    Ordinal length(5);
+    FunctionGenerator<int> gen(my_test_function, length);
+    EXPECT_THROW(gen.get_by_ordinal(Ordinal(5)), std::out_of_range);
+    EXPECT_THROW(gen.get_by_ordinal(Ordinal(100)), std::out_of_range);
+}
+
+TEST_F(FunctionGeneratorTest, GetByOrdinalDoesNotAffectState) {
+    Ordinal length(10);
+    FunctionGenerator<int> gen(my_test_function, length);
+
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(5)), 50);
+
+    EXPECT_TRUE(gen.has_next());
+    EXPECT_EQ(gen.get_next(), 0);
+}
+
+TEST_F(FunctionGeneratorTest, GetByOrdinalWorksForInfiniteSequence) {
+    FunctionGenerator<int> gen(my_test_function, Ordinal::omega());
+
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(100)), 1000);
+}
+

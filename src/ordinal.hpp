@@ -38,9 +38,9 @@ public:
 		}
 		return finite_part;
 	}
-
-	bool operator==(const Ordinal& other) const {
-		return omega_count == other.omega_count && finite_part == other.finite_part;
+	
+	friend bool operator==(const Ordinal& lhs, const Ordinal& rhs) {
+		return lhs.omega_count == rhs.omega_count && lhs.finite_part == rhs.finite_part;
 	}
 
 	bool operator!=(const Ordinal& other) const {
@@ -62,12 +62,26 @@ public:
 		return other < *this;
 	}
 
+	bool operator>=(const Ordinal& other) const {
+		return *this > other || *this == other;
+	}
+
+
 	Ordinal operator+(const Ordinal& other) const {
 		if (other.is_infinite()) {
 			return Ordinal(this->omega_count + other.omega_count, other.finite_part);
 		}
 		else {
 			return Ordinal(this->omega_count, this->finite_part + other.finite_part);
+		}
+	}
+
+	Ordinal operator -(const Ordinal& other) const {
+		if (other.is_infinite()) {
+			return Ordinal(this->omega_count - other.omega_count, other.finite_part);
+		}
+		else {
+			return Ordinal(this->omega_count, this->finite_part - other.finite_part);
 		}
 	}
 };

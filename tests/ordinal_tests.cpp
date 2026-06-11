@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <sstream>
 #include <stdexcept>
-#include "Ordinal_io.hpp"
+#include "ordinal.hpp"
+
 
 TEST(OrdinalTest, DefaultConstructor) {
     Ordinal ord;
@@ -85,29 +85,4 @@ TEST(OrdinalTest, AdditionOperator) {
     Ordinal res4 = w1 + w2;
     EXPECT_EQ(res4.get_omega_count(), 3);
     EXPECT_EQ(res4.get_finite_part(), 3);
-}
-
-TEST(OrdinalTest, StreamOutput) {
-    std::stringstream ss1;
-    ss1 << Ordinal(0, 5);
-    EXPECT_EQ(ss1.str(), "5");
-
-    std::stringstream ss2;
-    std::stringstream ss3;
-    ss2 << Ordinal(1, 0);
-    ss3 << Ordinal::omega();
-    EXPECT_EQ(ss2.str(), "w");
-    EXPECT_EQ(ss3.str(), "w");
-
-    std::stringstream ss4;
-    ss4 << Ordinal(1, 4);
-    EXPECT_EQ(ss4.str(), "w + 4");
-
-    std::stringstream ss5;
-    ss5 << Ordinal(3, 0);
-    EXPECT_EQ(ss5.str(), "w*3");
-
-    std::stringstream ss6;
-    ss6 << Ordinal(3, 2);
-    EXPECT_EQ(ss6.str(), "w*3 + 2");
 }

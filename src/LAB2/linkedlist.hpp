@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ienumerator.hpp"
+
 template <typename T> class ListEnumerator;
 
 template <class T>

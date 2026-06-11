@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(tests "tests/ordinal_tests.cpp" "tests/function_generator_tests.cpp")
+add_executable(tests "tests/ordinal_tests.cpp" "tests/function_generator_tests.cpp" "tests/recurrent_generator_tests.cpp" "tests/sequence_generator_tests.cpp" "tests/lazy_sequence_tests.cpp")
 
 target_link_libraries(tests PRIVATE ordinal gtest_main)
 

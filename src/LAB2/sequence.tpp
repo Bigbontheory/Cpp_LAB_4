@@ -25,24 +25,6 @@ Sequence<T>* Sequence<T>::map(T(*mapper)(const T& elem)) const {
 }
 
 template <typename T>
-T Sequence<T>::reduce(T(*reducer)(const T&, const T&), const T& initial_value) const {
-    T result = initial_value;
-    IEnumerator<T>* it = this->get_enumerator();
-
-    try {
-        while (it->move_next()) {
-            result = reducer(it->get_current(), result);
-        }
-        delete it;
-        return result;
-    }
-    catch (...) {
-        delete it;
-        throw;
-    }
-}
-
-template <typename T>
 Sequence<T>* Sequence<T>::where(bool (*predicate)(const T&)) const {
     ISequenceBuilder<T>* builder = this->create_builder();
     IEnumerator<T>* it = this->get_enumerator();
@@ -149,5 +131,3 @@ template <class T>
 Option<T> Sequence<T>::try_get_last() const {
     return this->try_get(this->get_size() - 1);
 }
-
-

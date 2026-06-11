@@ -13,7 +13,8 @@ private:
 	std::size_t current_index_;
 
 public:
-	FunctionGenerator(T(*func)(std::size_t), Ordinal length) : func_(func), length_(length), current_index_(0) {
+	FunctionGenerator(T(*func)(std::size_t), Ordinal length)
+		: func_(func), length_(length), current_index_(0) {
 		if (func == nullptr) {
 			throw std::invalid_argument("func cannot be nullptr");
 		}
@@ -37,8 +38,18 @@ public:
 		return func_(current_index_++); 
 	}
 
+	T get_by_ordinal(const Ordinal& index) const override {
+
+		if (!length_.is_infinite() && index >= length_) {
+			throw std::out_of_range("FunctionGenerator: infinite indices not supported");
+		}
+		std::size_t idx = static_cast<std::size_t>(index.get_value());
+		return func_(idx);
+	}
+
 	FunctionGenerator<T>* clone() const override {
 		return new FunctionGenerator<T>(*this);
 	}
 };
+
 
