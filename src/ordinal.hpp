@@ -68,20 +68,21 @@ public:
 
 
 	Ordinal operator+(const Ordinal& other) const {
-		if (other.is_infinite()) {
-			return Ordinal(this->omega_count + other.omega_count, other.finite_part);
-		}
-		else {
+		if (other.omega_count == 0) {
 			return Ordinal(this->omega_count, this->finite_part + other.finite_part);
 		}
+		return Ordinal(this->omega_count + other.omega_count, other.finite_part);
 	}
 
-	Ordinal operator -(const Ordinal& other) const {
-		if (other.is_infinite()) {
-			return Ordinal(this->omega_count - other.omega_count, other.finite_part);
+	Ordinal& operator--() {
+		if (finite_part > 0) {
+			finite_part--;
+			return *this;
 		}
-		else {
-			return Ordinal(this->omega_count, this->finite_part - other.finite_part);
+		if (omega_count > 0) {
+			throw std::logic_error("Ordinal decrement: cannot decrement at a limit point (omega border).");
 		}
+
+		throw std::logic_error("Ordinal decrement: cannot decrement zero.");
 	}
 };

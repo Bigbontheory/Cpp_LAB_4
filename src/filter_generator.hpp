@@ -1,62 +1,94 @@
 #pragma once
 
+#include <stdexcept>
+#include <string>
 #include "i_generator.hpp"
 #include "ordinal.hpp"
-#include <stdexcept>
 
-template <typename T>
+template <class T>
 class FilterGenerator : public IGenerator<T> {
 private:
-	IGenerator<T>* source_gen_;
-	bool (*predicate_)(const T&);
+    IGenerator<T>* source_gen_;
+    bool (*predicate_)(const T&);
+
+    Ordinal exact_length_;
+    mutable T cached_value_;
+    mutable bool has_cached_;
+    mutable bool source_exhausted_;
+    static constexpr std::size_t MAX_STEPS = 1000000;
+
+    void fetch_next() const {
+        if (has_cached_ || source_exhausted_) return;
+
+        std::size_t steps = 0;
+        while (source_gen_->has_next()) {
+            if (steps++ >= MAX_STEPS) {
+                throw std::runtime_error(
+                    "FilterGenerator: Infinite loop protection triggered. "
+                    "Checked " + std::to_string(MAX_STEPS) + " elements without a match."
+                );
+            }
+
+            T val = source_gen_->get_next();
+            if (predicate_(val)) {
+                cached_value_ = val;
+                has_cached_ = true;
+                return;
+            }
+        }
+        source_exhausted_ = true;
+    }
 
 public:
-	FilterGenerator(IGenerator<T>* gen, bool (*pred)(const T&))
-		: source_gen_(gen), predicate_(pred) {
-	}
+    FilterGenerator(const IGenerator<T>& source_gen, bool (*predicate)(const T&))
+        : source_gen_(source_gen.clone()),
+        predicate_(predicate),
+        exact_length_(0, 0),
+        has_cached_(false),
+        source_exhausted_(false)
+    {
+        if (predicate == nullptr) {
+            throw std::invalid_argument("FilterGenerator: predicate cannot be nullptr");
+        }
 
-	T get_next() override {
-		while (source_gen_->has_next()) {
-			T item = source_gen_->get_next();
-			if (predicate_(item)) {
-				return item;
-			}
-		}
-		throw std::out_of_range("No more elements matching the predicate");
-	}
+        if (!source_gen_->length().is_infinite()) {
+            std::size_t count = 0;
+            IGenerator<T>* temp = source_gen_->clone();
+            while (temp->has_next()) {
+                if (predicate_(temp->get_next())) {
+                    count++;
+                }
+            }
+            delete temp;
+            exact_length_ = Ordinal(0, count);
+        }
+    }
 
-	bool has_next() const override {
-		return source_gen_->has_next();
-	}
+    ~FilterGenerator() {
+        delete source_gen_;
+    }
 
-	
-	T get_by_ordinal(const Ordinal& index) const override {
-		if (index.is_infinite()) {
-			throw std::logic_error("IsInfinite not supported for get_by_ordinal in FilterGenerator");
-		}
+    Ordinal length() const override {
+        if (source_gen_->length().is_infinite()) {
+            throw std::logic_error("FilterGenerator: Cannot determine length of a filtered infinite sequence.");
+        }
+        return exact_length_;
+    }
 
-		int target_count = index.get_finite_part();
-		int current_found = -1;
+    bool has_next() const override  {
+        fetch_next();
+        return has_cached_;
+    }
 
-		while (source_gen_->has_next()) {
-			T item = source_gen_->get_next();
+    T get_next() override {
+        if (!has_next()) {
+            throw std::out_of_range("FilterGenerator: no more elements match the predicate");
+        }
+        has_cached_ = false;
+        return cached_value_;
+    }
 
-			if (predicate_(item)) {
-				current_found++;
-				if (current_found == target_count) {
-					return item;
-				}
-			}
-		}
-
-		throw std::out_of_range("Element not found: sequence ended before reaching the target index");
-	}
-
-	Ordinal length() const override {
-		return source_gen_->length();
-	}
-
-	FilterGenerator<T>* clone() const override {
-		return new FilterGenerator<T>(source_gen_, predicate_);
-	}
+    IGenerator<T>* clone() const override {
+        return new FilterGenerator<T>(*source_gen_, predicate_);
+    }
 };

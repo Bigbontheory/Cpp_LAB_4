@@ -49,18 +49,4 @@ public:
         return Ordinal(0, source_->get_size());
     }
 
-    T get_by_ordinal(const Ordinal& index) const override {
-
-        if (index.is_infinite()) {
-            throw std::out_of_range("SequenceGenerator: cannot access infinite index in finite sequence");
-        }
-
-        std::size_t idx = static_cast<std::size_t>(index.get_value());
-
-        if (idx >= source_->get_size()) {
-            throw std::out_of_range("SequenceGenerator: index out of range");
-        }
-
-        return source_->get(idx);
-    }
 };

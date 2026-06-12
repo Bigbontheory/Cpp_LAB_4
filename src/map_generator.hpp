@@ -1,37 +1,53 @@
 #pragma once
 
-#include "i_generator.hpp"
-#include "ordinal.hpp"
 #include <stdexcept>
+#include "i_transfinite_generator.hpp"
+#include "ordinal.hpp"
 
-template <typename T>
-class MapGenerator : public IGenerator<T> {
+template <class T>
+class LazySeq;
+
+template <class T>
+class MapGenerator : public ITransfiniteGenerator<T> {
 private:
-    IGenerator<T>* source_gen_;
-    T(*mapper_)(const T&);
+    const LazySeq<T>& source_;
+    T(*func_)(const T&);;
+    Ordinal source_length_;
+    std::size_t position_;
 
 public:
-    MapGenerator(IGenerator<T>* gen, T(*mapper)(const T&))
-        : source_gen_(gen), mapper_(mapper) {
-    }
-
-    T get_next() override {
-        return mapper_(source_gen_->get_next());
-    }
-
-    bool has_next() const override {
-        return source_gen_->has_next();
+    MapGenerator(const LazySeq<T>& source, T(*func)(const T&))
+        : source_(source),
+        func_(func),
+        source_length_(source.get_ordinal_length()),
+        position_(0) {
     }
 
     Ordinal length() const override {
-        return source_gen_->length();
+        return source_length_;
     }
 
-    T get_by_ordinal(const Ordinal& index) const override {
-        return mapper_(source_gen_->get_by_ordinal(index));
+    bool has_next() const override {
+        if (source_length_.is_infinite()) return true;
+        return position_ < source_length_.get_finite_part();
     }
 
-    MapGenerator<T>* clone() const override {
-        return new  MapGenerator<T>(source_gen_, mapper_);
+    T get_next() override {
+        if (!has_next()) throw std::out_of_range("map_generator: out of elements");
+
+        T src_value = source_.get(Ordinal(position_));
+        position_++;
+        return func_(src_value);
+    }
+
+    IGenerator<T>* clone() const override {
+        return new MapGenerator<T>(source_, func_);
+    }
+
+    T get_by_ordinal_index(const Ordinal& index) const override {
+        if (index >= source_length_) {
+            throw std::out_of_range("map_generator: transfinite index out of bounds");
+        }
+        return func_(source_.get(index));
     }
 };

@@ -64,24 +64,4 @@ public:
 		return new RecurrentGenerator<T>(*this);
 	}
 
-	T get_by_ordinal(const Ordinal& index) const override {
-		if (!length_.is_infinite() && index >= length_) {
-			throw std::out_of_range("RecurrentGenerator: index out of range");
-		}
-		if (index.is_infinite()) {
-			throw std::out_of_range("RecurrentGenerator: infinite indices not supported");
-		}
-		std::size_t target = static_cast<std::size_t>(index.get_value());
-
-		if (target < window_.get_size() && current_index_ <= target) {
-			return window_.get(target);
-		}
-		RecurrentGenerator<T> temp = *this;
-		T result;
-		while (temp.current_index_ <= target) {
-			result = temp.get_next();
-		}
-		return result;
-	}
-
 };

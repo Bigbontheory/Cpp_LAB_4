@@ -1,4 +1,5 @@
-
+#include "concat_generator.hpp"
+#include "append_generator.hpp"
 
 template<typename T>
 LazySeq<T>::LazySeq(T(*func)(std::size_t), Ordinal length) {
@@ -23,11 +24,10 @@ LazySeq<T>::LazySeq(const LazySeq<T>& other) {
 }
 
 template <typename T>
-LazySeq<T>::LazySeq(const T* items, int count) {
+LazySeq<T>::LazySeq(const T* items, int count) : is_infinite_(false) {
 	for (int i = 0; i < count; ++i) {
 		cache_.append(items[i]);
 	}
-	is_infinite_ = false;
 	generator_ = new SequenceGenerator<T>(cache_);
 }
 
@@ -67,7 +67,8 @@ LazySeq<T>::LazySeq(const Sequence<T>& seq) {
 }
 
 template <typename T>
-LazySeq<T> ::LazySeq() : generator_(nullptr) {}
+LazySeq<T>::LazySeq() : generator_(nullptr), is_infinite_(false) {
+}
 
 template <typename T> 
 LazySeq<T>:: ~LazySeq() {
@@ -82,6 +83,14 @@ void LazySeq<T>::evaluate_up_to(int index) const {
 	while (this->cache_.get_size() <= index && generator_->has_next()) {
 		this->cache_.append(generator_->get_next());
 	}
+}
+
+template <typename T>
+const Ordinal LazySeq<T>::get_ordinal_length() const {
+	if (generator_ == nullptr) {
+		return Ordinal(0);
+	}
+	return generator_->length();
 }
 
 template <typename T>
@@ -123,72 +132,63 @@ const T& LazySeq<T>::get_last() const {
 }
 
 template <typename T>
-IEnumerator<T>* LazySeq<T>::get_enumerator() const {
-	return new LazyEnumerator(this);
-}
-
-template <typename T>
 LazySeq<T>* LazySeq<T>::append(const T& item) {
-	AppendGenerator<T>* temp_gen = new AppendGenerator<T>(item, generator_);
-	return new LazySeq<T>(temp_gen);
+	IGenerator<T>* new_gen = new AppendGenerator<T>(*this, item);
+	return new LazySeq<T>(new_gen);
 }
 
 template <typename T>
-const T& LazySeq<T>::get(const Ordinal& index) const {
+T LazySeq<T>::get(const Ordinal& index) const {
+	if (generator_ == nullptr) {
+		throw std::out_of_range("LazySeq is empty");
+	}
+
+	if (index >= generator_->length()) {
+		throw std::out_of_range("Index out of range");
+	}
+
 	if (index.is_infinite()) {
-		return generator_->get_by_ordinal(index);
+		auto* trans_gen = dynamic_cast<ITransfiniteGenerator<T>*>(generator_);
+		if (!trans_gen) {
+			throw std::logic_error("LazySeq: This sequence is finite and does not support transfinite indexing.");
+		}
+		return trans_gen->get_by_ordinal_index(index);
 	}
 
 	int target_index = index.get_finite_part();
-
-	if (target_index < cache_.get_size()) {
-		return cache_.get(target_index);
+	if (target_index >= cache_.get_size()) {
+		evaluate_up_to(target_index);
 	}
 
-	evaluate_up_to(target_index);
 	return cache_.get(target_index);
 }
 
 template <typename T>
-LazySeq<T>* LazySeq<T>::prepend(const T& item) {
-	PrependGenerator<T>* temp_gen = new PrependGenerator<T> (item, generator_);
-    return new LazySeq<T>(temp_gen);
+LazySeq<T>* LazySeq<T>::map(T(*func)(const T&)) const {
+	IGenerator<T>* new_gen = new MapGenerator<T>(*this, func);
+	return new LazySeq<T>(new_gen);
 }
 
 template <typename T>
-LazySeq<T>* LazySeq<T>::map(T(*mapper)(const T& elem)) const {
-	MapGenerator<T>* map_gen = new MapGenerator<T>(this->generator_, mapper);
-	return new LazySeq<T>(map_gen);
-}
+LazySeq<T>* LazySeq<T>::where(bool (*predicate)(const T&)) const {
+	if (predicate == nullptr) {
+		throw std::invalid_argument("where: predicate cannot be nullptr");
+	}
+	IGenerator<T>* source_clone = this->generator_->clone();
+	FilterGenerator<T>* filter_gen = new FilterGenerator<T>(*source_clone, predicate);
+	delete source_clone;
 
-template <typename T>
-LazySeq<T>* LazySeq<T>::where(bool (*predicate)(const T& elem)) const {
-	FilterGenerator<T>* filter_gen = new FilterGenerator<T>(this->generator_, predicate);
 	return new LazySeq<T>(filter_gen);
 }
 
 
 template <typename T>
 LazySeq<T>* LazySeq<T>::concat(const LazySeq<T>& other) const {
-	ConcatGenerator<T>* new_gen = new ConcatGenerator<T>(
-		this->generator_->clone(),
-		other.generator_->clone()
-	); 
-
+	IGenerator<T>* new_gen = new ConcatGenerator<T>(*this, other);
 	return new LazySeq<T>(new_gen);
 }
 
 template <typename T>
 bool LazySeq<T>:: is_infinite() const {
     return is_infinite_;
-}
-
-template <typename T>
-LazySeq<T>* LazySeq<T>::insert_at_ordinal(const T& element, Ordinal pos) {
-	InsertElementGenerator<T>* gen = new InsertElementGenerator<T>(
-		this->generator_->clone(),
-		element,
-		pos
-	);
-	return new LazySeq<T>(gen);
 }

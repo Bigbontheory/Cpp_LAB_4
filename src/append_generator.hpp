@@ -1,79 +1,70 @@
 #pragma once
-#include "i_generator.hpp"
-#include "ordinal.hpp"
-#include <stdexcept>
 
-template <typename T>
-class AppendGenerator : public IGenerator<T> {
+#include <stdexcept>
+#include "lazy_sequence.hpp"
+
+template <class T>
+class AppendGenerator : public ITransfiniteGenerator<T> {
 private:
-    T item_;
-    IGenerator<T>* base_gen_;
-    bool item_yielded_;
+    const LazySeq<T>& source_;
+    T* item_;
+    Ordinal source_length_;
+    std::size_t position_;
 
 public:
-    AppendGenerator(const T& item, const IGenerator<T>* base_gen)
-        : item_(item), base_gen_(nullptr), item_yielded_(false) {
-        if (base_gen == nullptr) {
-            throw std::invalid_argument("AppendGenerator: base_gen cannot be nullptr");
-        }
-        base_gen_ = base_gen->clone();
+    AppendGenerator(const LazySeq<T>& source, const T& item)
+        : source_(source),
+        item_(new T(item)),
+        source_length_(source.get_ordinal_length()),
+        position_(0) {
     }
 
     ~AppendGenerator() {
-        delete base_gen_;
-    }
-
-    AppendGenerator(const AppendGenerator<T>& other)
-        : item_(other.item_), base_gen_(nullptr), item_yielded_(other.item_yielded_) {
-        if (other.base_gen_) {
-            base_gen_ = other.base_gen_->clone();
-        }
-    }
-
-    AppendGenerator<T>& operator=(const AppendGenerator<T>& other) {
-        if (this != &other) {
-            IGenerator<T>* new_base = other.base_gen_ ? other.base_gen_->clone() : nullptr;
-            delete base_gen_;
-            item_ = other.item_;
-            base_gen_ = new_base;
-            item_yielded_ = other.item_yielded_;
-        }
-        return *this;
-    }
-
-    bool has_next() const override {
-        if (base_gen_->has_next()) {
-            return true;
-        }
-        return !item_yielded_;
-    }
-
-    T get_next() override {
-        if (!has_next()) {
-            throw std::out_of_range("AppendGenerator: generator exhausted");
-        }
-        if (base_gen_->has_next()) {
-            return base_gen_->get_next();
-        }
-        item_yielded_ = true;
-        return item_;
-    }
-
-    IGenerator<T>* clone() const override {
-        return new AppendGenerator<T>(*this);
+        delete item_;
     }
 
     Ordinal length() const override {
-        return base_gen_->length() + Ordinal(0, 1);
+        return source_length_ + Ordinal(1);
     }
 
-    T get_by_ordinal(const Ordinal& index) const override {
-        if (index < base_gen_->length()) {
-            return base_gen_->get_by_ordinal(index);
+    bool has_next() const override {
+        if (source_length_.is_infinite()) return true;
+        return position_ <= source_length_.get_finite_part();
+    }
+
+    T get_next() override {
+        if (!has_next()) throw std::out_of_range("append_generator: out of elements");
+
+        T value;
+        if (source_length_.is_infinite()) {
+            value = source_.get(Ordinal(position_));
         }
-        if (index == base_gen_->length()) {
-            return item_;
+        else {
+            if (position_ < source_length_.get_finite_part()) {
+                value = source_.get(Ordinal(position_));
+            }
+            else {
+                value = *item_;
+            }
         }
-        throw std::out_of_range("AppendGenerator: ordinal index out of range");
+
+        position_++;
+        return value;
+    }
+
+    IGenerator<T>* clone() const override {
+        return new AppendGenerator<T>(source_, *item_);
+    }
+
+    T get_by_ordinal_index(const Ordinal& index) const override {
+        if (index < source_length_) {
+            return source_.get(index);
+        }
+
+        if (index == source_length_) {
+            return *item_;
+        }
+
+        throw std::out_of_range("append_generator: transfinite index out of bounds");
     }
 };

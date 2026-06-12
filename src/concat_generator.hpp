@@ -1,72 +1,70 @@
 #pragma once
 
-#include "i_generator.hpp"
-#include "ordinal.hpp"
 #include <stdexcept>
+#include "i_transfinite_generator.hpp"
+#include "ordinal.hpp"
 
-template <typename T>
-class ConcatGenerator : public IGenerator<T> {
+template <class T>
+class LazySeq;
+
+template <class T>
+class ConcatGenerator : public ITransfiniteGenerator<T> {
 private:
-    IGenerator<T>* first_;
-    IGenerator<T>* second_;
-    Ordinal first_length_;
-    Ordinal total_length_;
-    std::size_t current_index_;
+    const LazySeq<T>& first_;
+    const LazySeq<T>& second_;
+    Ordinal len1_;
+    Ordinal total_len_;
+    std::size_t pos_;
 
 public:
-    ConcatGenerator(IGenerator<T>* first, IGenerator<T>* second)
-        : first_(first), second_(second), current_index_(0) {
-        first_length_ = first_->length();
-        total_length_ = first_length_ + second_->length();
+    ConcatGenerator(const LazySeq<T>& first, const LazySeq<T>& second)
+        : first_(first),
+        second_(second),
+        len1_(first.get_ordinal_length()),
+        total_len_(first.get_ordinal_length() + second.get_ordinal_length()), 
+        pos_(0) {
     }
 
-    ~ConcatGenerator()  {
-        delete first_;
-        delete second_;
-    }
+    Ordinal length() const override { return total_len_; }
 
-    bool has_next() const override {
-        if (total_length_.is_infinite()) {
-            return true;
-        }
-        return current_index_ < total_length_.get_value();
+    bool has_next() const override { // учесть, что последовательность может быть потенциально беск.
+        if (total_len_.is_infinite()) return true;
+        return pos_ < total_len_.get_finite_part();
     }
 
     T get_next() override {
-        if (!has_next()) {
-            throw std::out_of_range("ConcatGenerator: Generator exhausted");
+        if (!has_next()) throw std::out_of_range("concat_generator: out of bounds");
+
+        T val = get_by_ordinal_index(Ordinal(pos_));
+        pos_++;
+        return val;
+    }
+
+    T get_by_ordinal_index(const Ordinal& index) const override {
+        if (index >= total_len_) {
+            throw std::out_of_range("concat_generator: index out of bounds");
         }
 
-        T value;
-        if (first_->has_next()) {
-            value = first_->get_next();
+        if (index < len1_) {
+            return first_.get(index);
         }
         else {
-            value = second_->get_next();
-        }
+ 
+            if (!len1_.is_infinite()) {             
+                std::size_t relative_finite = index.get_finite_part() - len1_.get_finite_part();
+                return second_.get(Ordinal(index.get_omega_count(), relative_finite));
+            }
+            else {
+               
+                std::size_t relative_omega = index.get_omega_count() - len1_.get_omega_count();
+                std::size_t relative_finite = index.get_finite_part();
 
-        current_index_++;
-        return value;
-    }
-
-    T get_by_ordinal(const Ordinal& index) const override {
-        if (index >= total_length_) {
-            throw std::out_of_range("ConcatGenerator: index out of range");
-        }
-
-        if (index < first_length_) {
-            return first_->get_by_ordinal(index);
-        }
-        else {
-            return second_->get_by_ordinal(index - first_length_);
+                return second_.get(Ordinal(relative_omega, relative_finite));
+            }
         }
     }
 
-    Ordinal length() const override {
-        return total_length_;
-    }
-
-    ConcatGenerator<T>* clone() const override {
-        return new ConcatGenerator<T>(first_->clone(), second_->clone());
+    IGenerator<T>* clone() const override {
+        return new ConcatGenerator<T>(first_, second_);
     }
 };
