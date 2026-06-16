@@ -12,6 +12,7 @@
 #include "map_generator.hpp"
 #include "filter_generator.hpp"
 #include "insert_at_generator.hpp"
+#include "prepend_generator.hpp"
 
 
 
@@ -21,13 +22,11 @@ private:
 	mutable IGenerator<T>* generator_;
 	mutable MutableArraySequence<T> cache_;
 	bool is_infinite_;
-	void evaluate_up_to(int index) const;
-	bool is_infinite() const;
-	LazySeq<T>* prepend(const T& item) override { return nullptr; }
 
 public:
+	void evaluate_up_to(int index) const;
 	LazySeq();
-	LazySeq(const T* items, int count);
+	LazySeq(T* items, int count);
 	LazySeq(const LazySeq<T>& other);
 	explicit LazySeq(const IGenerator<T>* gen); 
 	LazySeq(T(*func)(std::size_t), Ordinal length); // constructor for function generator
@@ -44,13 +43,14 @@ public:
 		return cache_.get_size();
 	}
 
+	bool is_infinite() const;
 	const T& get(int index) const override;
 	const T& get_first() const override;
 	const T& get_last() const override;
 	T get(const Ordinal& index) const;
 	const Ordinal get_ordinal_length() const;
 
-
+	LazySeq<T>* prepend(const T& element) override;
 	LazySeq<T>* map(T(*func)(const T&)) const;
 	LazySeq<T>* where(bool (*predicate)(const T&)) const;
 	LazySeq<T>* concat(const LazySeq<T>& other) const;

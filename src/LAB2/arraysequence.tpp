@@ -54,6 +54,20 @@ ArraySequence<T>::ArraySequence(const LinkedList<T>& list) : items(new DynamicAr
 }
 
 template <typename T>
+ArraySequence<T>& ArraySequence<T>::operator=(const ArraySequence<T>& other) {
+    if (this == &other) {
+        return *this;
+    }
+    DynamicArray<T>* new_items = new DynamicArray<T>(*other.items);
+
+    delete items;
+
+    items = new_items;
+
+    return *this;
+}
+
+template <typename T>
 ArraySequence<T>::ArraySequence(T* data, int count)
     : items(new DynamicArray<T>(data, count)) {
 }

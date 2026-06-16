@@ -7,6 +7,12 @@ static int natural_generator_func(std::size_t index) {
     return static_cast<int>(index);
 }
 
+static int second_natural_generator_func(std::size_t index) {
+    
+    Ordinal ord(index);
+    return 100 + static_cast<int>(ord.get_finite_part());
+}
+
 TEST(ConcatGeneratorTest, FiniteConcat) {
     int arr1[] = { 10, 20 };
     int arr2[] = { 30, 40 };
@@ -66,4 +72,30 @@ TEST(ConcatGeneratorTest, CloneBehavior) {
     EXPECT_EQ(static_cast<ConcatGenerator<int>*>(cloned)->get_by_ordinal(Ordinal(1)), 6);
 
     delete cloned;
+}
+
+TEST(ConcatGeneratorTest, TransfiniteDoubleOmegaConcat) {
+    // Две бесконечные последовательности: каждая возвращает свое значение * 1
+    // Пусть first_base возвращает 0, 1, 2...
+    // Пусть second_base возвращает 100, 101, 102...
+    LazySeq<int> first_base(natural_generator_func, Ordinal::omega());
+    LazySeq<int> second_base(second_natural_generator_func, Ordinal::omega());
+
+    ConcatGenerator<int> gen(first_base, second_base);
+
+    // 1. Проверяем длину: omega + omega
+    EXPECT_EQ(gen.length(), Ordinal::omega() + Ordinal::omega());
+
+    // 2. Проверяем элементы первой последовательности (до omega)
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(0)), 0);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(99)), 99);
+
+    // 3. Проверяем элементы второй последовательности (переход через omega)
+    // omega - это начало второй последовательности (0-й элемент второй)
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal::omega()), 100);
+
+    // omega + 5 - это 5-й элемент второй последовательности
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal::omega() + Ordinal(5)), 105);
+
+    // 4. Проверяем, что нет "ошибки смещения" (значения не перепутаны)
 }

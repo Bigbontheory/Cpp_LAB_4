@@ -25,6 +25,7 @@ public:
     ArraySequence(T* items, int count);
     explicit ArraySequence(const LinkedList<T>& list);
     ArraySequence(const ArraySequence<T>& other);
+    ArraySequence<T>& operator=(const ArraySequence<T>& other);
 
     virtual ~ArraySequence();
 

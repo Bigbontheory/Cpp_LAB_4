@@ -42,6 +42,7 @@ public:
 
 	virtual Sequence_LAB_2<T>* append(const T& item) = 0;
 	virtual Sequence_LAB_2<T>* prepend(const T& item) = 0;
+	
 	virtual Sequence_LAB_2<T>* insert_at(const T& item, int index) = 0;
 	virtual Sequence_LAB_2<T>* remove_at(int index) = 0;
 

@@ -1,5 +1,6 @@
 #include "concat_generator.hpp"
 #include "append_generator.hpp"
+#include "iostream"
 
 template<typename T>
 LazySeq<T>::LazySeq(T(*func)(std::size_t), Ordinal length) {
@@ -11,24 +12,27 @@ LazySeq<T>::LazySeq(T(*func)(std::size_t), Ordinal length) {
 }
 
 template <typename T>
-LazySeq<T>::LazySeq(const LazySeq<T>& other) {
-	is_infinite_ = other.is_infinite_;
-	cache_ = other.cache_;
+LazySeq<T>::LazySeq(const LazySeq<T>& other)
+	: is_infinite_(other.is_infinite_)
+{
+	this->cache_ = MutableArraySequence<T>(other.cache_);
 
-	if (other.generator_) {
-		generator_ = other.generator_->clone();
+	// ВСТАВЬ ЭТО:
+	if (other.generator_ != nullptr) {
+		this->generator_ = other.generator_->clone();
+		// Смотрим, что получилось
+		std::cout << "DEBUG: Cache size: " << this->cache_.get_size()
+			<< ", Generator cloned: " << (this->generator_ != nullptr) << std::endl;
 	}
 	else {
-		generator_ = nullptr;
+		this->generator_ = nullptr;
 	}
 }
 
 template <typename T>
-LazySeq<T>::LazySeq(const T* items, int count) : is_infinite_(false) {
-	for (int i = 0; i < count; ++i) {
-		cache_.append(items[i]);
-	}
-	generator_ = new SequenceGenerator<T>(cache_);
+LazySeq<T>::LazySeq(T* items, int count) : is_infinite_(false) {
+	this->cache_ = MutableArraySequence<T>(items, count);
+	generator_ = new SequenceGenerator<T>(this->cache_);
 }
 
 template <typename T>
@@ -38,17 +42,7 @@ LazySeq<T>::LazySeq(const IGenerator<T>* gen)
 
 template <typename T>
 LazySeq<T>* LazySeq<T>::clone() const {
-	LazySeq<T>* new_seq = new LazySeq<T>();
-
-	new_seq->is_infinite_ = this->is_infinite_;
-
-	if (this->generator_) {
-		new_seq->generator_ = this->generator_->clone();
-	}
-
-	new_seq->cache_ = this->cache_;
-
-	return new_seq;
+	return new LazySeq<T>(*this);
 }
 
 template <typename T>
@@ -77,18 +71,23 @@ LazySeq<T>:: ~LazySeq() {
 
 template <typename T>
 void LazySeq<T>::evaluate_up_to(int index) const {
-	if (generator_ == nullptr) {
-		throw std::invalid_argument("generator cannot be nullptr");
-	}
-	while (this->cache_.get_size() <= index && generator_->has_next()) {
-		this->cache_.append(generator_->get_next());
+	if (cache_.get_size() > index) return;
+
+	while (cache_.get_size() <= index) {
+
+		if (!generator_->has_next()) {
+			throw std::out_of_range("Generator exhausted before reaching index");
+		}
+
+		T val = generator_->get_next();
+		cache_.append(val);
 	}
 }
 
 template <typename T>
 const Ordinal LazySeq<T>::get_ordinal_length() const {
 	if (generator_ == nullptr) {
-		return Ordinal(0);
+		return Ordinal(0, 0);
 	}
 	return generator_->length();
 }
@@ -117,18 +116,14 @@ const T& LazySeq<T>::get_first() const {
 
 template <typename T>
 const T& LazySeq<T>::get_last() const {
-	if (is_infinite_) {
-		throw std::logic_error("Cannot get last element of infinite LazySeq");
-	}
-	while (generator_->has_next()) {
-		cache_.append(generator_->get_next());
-	}
-
-	if (cache_.get_size() == 0) {
+	Ordinal len = get_ordinal_length();
+	if (len.get_finite_part() == 0) {
 		throw std::out_of_range("LazySequence is empty");
 	}
+	int last_index = len.get_finite_part() - 1;
+	evaluate_up_to(last_index);
 
-	return cache_.get(cache_.get_size() - 1);
+	return cache_.get(last_index);
 }
 
 template <typename T>
@@ -150,6 +145,7 @@ T LazySeq<T>::get(const Ordinal& index) const {
 	if (index.is_infinite()) {
 		return generator_->get_by_ordinal(index);
 	}
+
 	std::size_t target_index = index.get_finite_part();
 	if (target_index >= cache_.get_size()) {
 		evaluate_up_to(target_index);
@@ -206,4 +202,14 @@ LazySeq<T>* LazySeq<T>::insert_at(const T& element, int index) {
 
 	InsertAtGenerator<T>* insert_gen = new InsertAtGenerator<T>(this->generator_, element, Ordinal(index));
 	return new LazySeq<T>(insert_gen);
+}
+
+template <typename T>
+LazySeq<T>* LazySeq<T>::prepend (const T& element) {
+	if (generator_ == nullptr) {
+		throw std::logic_error("prepend: generator cannot be nullptr");
+	}
+
+	PrependGenerator<T>* prepend_gen = new PrependGenerator<T>(this->generator_, element);
+	return new LazySeq<T>(prepend_gen);
 }
