@@ -45,19 +45,19 @@ int ListSequence<T>::get_size() const {
 }
 
 template <typename T>
-Sequence<T>* ListSequence<T>::append_internal(const T& item) {
+Sequence_LAB_2<T>* ListSequence<T>::append_internal(const T& item) {
     items->append(item);
     return this;
 }
 
 template <typename T>
-Sequence<T>* ListSequence<T>::prepend_internal(const T& item) {
+Sequence_LAB_2<T>* ListSequence<T>::prepend_internal(const T& item) {
     items->prepend(item);
     return this;
 }
 
 template <typename T>
-Sequence<T>* ListSequence<T>::insert_at_internal(const T& item, int index) {
+Sequence_LAB_2<T>* ListSequence<T>::insert_at_internal(const T& item, int index) {
     if (index < 0 || index > this->get_size()) {
         throw std::out_of_range("Index out of range");
     }
@@ -66,22 +66,22 @@ Sequence<T>* ListSequence<T>::insert_at_internal(const T& item, int index) {
 }
 
 template <typename T>
-Sequence<T>* ListSequence<T>::append(const T& item) {
+Sequence_LAB_2<T>* ListSequence<T>::append(const T& item) {
     return this->instance()->append_internal(item);
 }
 
 template <typename T>
-Sequence<T>* ListSequence<T>::prepend(const T& item) {
+Sequence_LAB_2<T>* ListSequence<T>::prepend(const T& item) {
     return this->instance()->prepend_internal(item);
 }
 
 template <typename T>
-Sequence<T>* ListSequence<T>::insert_at(const T& item, int index) {
+Sequence_LAB_2<T>* ListSequence<T>::insert_at(const T& item, int index) {
     return this->instance()->insert_at_internal(item, index);
 }
 
 template <typename T>
-Sequence<T>* ListSequence<T>::remove_at_internal(int index) {
+Sequence_LAB_2<T>* ListSequence<T>::remove_at_internal(int index) {
     if (index < 0 || index >= this->get_size()) {
         throw std::out_of_range("Index out of range");
     }
@@ -90,7 +90,7 @@ Sequence<T>* ListSequence<T>::remove_at_internal(int index) {
 }
 
 template <typename T>
-Sequence<T>* ListSequence<T>::remove_at(int index) {
+Sequence_LAB_2<T>* ListSequence<T>::remove_at(int index) {
     return this->instance()->remove_at_internal(index);
 }
 

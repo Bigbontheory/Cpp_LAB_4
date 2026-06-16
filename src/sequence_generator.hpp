@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LAB2/mutable_array_sequence.hpp"
 #include "i_generator.hpp"
 #include "LAB2/sequence.hpp"
 #include "ordinal.hpp"
@@ -8,11 +9,11 @@
 template <typename T>
 class SequenceGenerator : public IGenerator<T> {
 private:
-    const Sequence<T>* source_;
+    const MutableArraySequence<T>* source_;
     std::size_t current_index_;
 
 public:
-    explicit SequenceGenerator(const Sequence<T>& source)
+    explicit SequenceGenerator(const MutableArraySequence<T>& source)
         : source_(&source), current_index_(0) {
     }
 
@@ -47,6 +48,18 @@ public:
 
     Ordinal length() const override {
         return Ordinal(0, source_->get_size());
+    }
+
+    T get_by_ordinal(const Ordinal& index) const override {
+        if (index.is_infinite()) {
+            throw std::logic_error("SequenceGenerator: transfinite indexing is not supported for finite array sequences.");
+        }
+
+        std::size_t target_index = index.get_finite_part();
+        if (target_index >= source_->get_size()) {
+            throw std::out_of_range("SequenceGenerator: index out of range.");
+        }
+        return source_->get(target_index);
     }
 
 };

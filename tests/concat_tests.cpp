@@ -25,11 +25,11 @@ TEST(ConcatGeneratorTest, FiniteConcat) {
     EXPECT_FALSE(gen.has_next());
     EXPECT_THROW(gen.get_next(), std::out_of_range);
 
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(0)), 10);
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(1)), 20);
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(2)), 30);
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(3)), 40);
-    EXPECT_THROW(gen.get_by_ordinal_index(Ordinal(4)), std::out_of_range);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(0)), 10);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(1)), 20);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(2)), 30);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(3)), 40);
+    EXPECT_THROW(gen.get_by_ordinal(Ordinal(4)), std::out_of_range);
 }
 
 TEST(ConcatGeneratorTest, TransfiniteConcat) {
@@ -43,13 +43,13 @@ TEST(ConcatGeneratorTest, TransfiniteConcat) {
 
     EXPECT_TRUE(gen.has_next());
 
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(0)), 0);
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(50)), 50);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(0)), 0);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(50)), 50);
 
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal::omega()), 888);
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal::omega() + Ordinal(1)), 999);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal::omega()), 888);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal::omega() + Ordinal(1)), 999);
 
-    EXPECT_THROW(gen.get_by_ordinal_index(Ordinal::omega() + Ordinal(2)), std::out_of_range);
+    EXPECT_THROW(gen.get_by_ordinal(Ordinal::omega() + Ordinal(2)), std::out_of_range);
 }
 
 TEST(ConcatGeneratorTest, CloneBehavior) {
@@ -62,8 +62,8 @@ TEST(ConcatGeneratorTest, CloneBehavior) {
     IGenerator<int>* cloned = gen.clone();
 
     EXPECT_EQ(cloned->length(), Ordinal(2));
-    EXPECT_EQ(static_cast<ConcatGenerator<int>*>(cloned)->get_by_ordinal_index(Ordinal(0)), 5);
-    EXPECT_EQ(static_cast<ConcatGenerator<int>*>(cloned)->get_by_ordinal_index(Ordinal(1)), 6);
+    EXPECT_EQ(static_cast<ConcatGenerator<int>*>(cloned)->get_by_ordinal(Ordinal(0)), 5);
+    EXPECT_EQ(static_cast<ConcatGenerator<int>*>(cloned)->get_by_ordinal(Ordinal(1)), 6);
 
     delete cloned;
 }

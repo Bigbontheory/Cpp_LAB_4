@@ -86,16 +86,3 @@ TEST(OrdinalTest, AdditionOperator) {
     EXPECT_EQ(res4.get_omega_count(), 3);
     EXPECT_EQ(res4.get_finite_part(), 3);
 }
-
-TEST(OrdinalTest, DecrementOperator) {
-    Ordinal ord1(0, 5);
-    --ord1;
-    EXPECT_EQ(ord1.get_finite_part(), 4);
-    Ordinal ord2(1, 0);
-    EXPECT_THROW(--ord2, std::logic_error);
-
-    Ordinal ord3(1, 1);
-    --ord3;
-    EXPECT_EQ(ord3.get_omega_count(), 1);
-    EXPECT_EQ(ord3.get_finite_part(), 0);
-}

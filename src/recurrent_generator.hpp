@@ -11,6 +11,7 @@ private:
 	T(*rule)(const MutableArraySequence<T>&);
 	Ordinal length_;
 	std::size_t current_index_;
+	MutableArraySequence<T> initial_seq_;
 	MutableArraySequence<T> window_;
 
 public:
@@ -20,7 +21,8 @@ public:
 		rule(func),
 		length_(length),
 		current_index_(0),
-		window_(initial_sequence) {
+		window_(initial_sequence),
+		initial_seq_(initial_sequence) {
 		if (func == nullptr) {
 			throw std::invalid_argument("func cannot be nullptr");
 		}
@@ -62,6 +64,25 @@ public:
 
 	RecurrentGenerator<T>* clone() const override {
 		return new RecurrentGenerator<T>(*this);
+	}
+
+	T get_by_ordinal(const Ordinal& index) const override {
+		if (length_.is_infinite() || index.is_infinite()) {
+			throw std::logic_error("RecurrentGenerator: random access is not supported if the sequence or index is infinite.");
+		}
+
+		std::size_t target_index = index.get_finite_part();
+		if (target_index >= static_cast<std::size_t>(length_.get_value())) {
+			throw std::out_of_range("RecurrentGenerator: index out of range.");
+		}
+
+		RecurrentGenerator<T> temp_gen(initial_seq_, rule, length_);
+
+		T target_value;
+		for (std::size_t i = 0; i <= target_index; ++i) {
+			target_value = temp_gen.get_next();
+		}
+		return target_value;
 	}
 
 };

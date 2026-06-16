@@ -16,8 +16,8 @@ public:
 		seq->append_internal(item);
 	}
 
-	Sequence<T>* build() override {
-		Sequence<T>* res = seq;
+	Sequence_LAB_2<T>* build() override {
+		Sequence_LAB_2<T>* res = seq;
 		seq = nullptr;
 		return res;
 	}

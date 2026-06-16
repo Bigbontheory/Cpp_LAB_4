@@ -1,14 +1,14 @@
 #pragma once
 
 #include <stdexcept>
-#include "i_transfinite_generator.hpp"
+#include "i_generator.hpp"
 #include "ordinal.hpp"
 
 template <class T>
 class LazySeq;
 
 template <class T>
-class MapGenerator : public ITransfiniteGenerator<T> {
+class MapGenerator : public IGenerator<T> {
 private:
     const LazySeq<T>& source_;
     T(*func_)(const T&);;
@@ -44,7 +44,7 @@ public:
         return new MapGenerator<T>(source_, func_);
     }
 
-    T get_by_ordinal_index(const Ordinal& index) const override {
+    T get_by_ordinal(const Ordinal& index) const override {
         if (index >= source_length_) {
             throw std::out_of_range("map_generator: transfinite index out of bounds");
         }

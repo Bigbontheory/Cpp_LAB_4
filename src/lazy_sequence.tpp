@@ -61,7 +61,7 @@ LazySeq<T>::LazySeq(T(*rule)(const MutableArraySequence<T>&),
 }
 
 template<typename T>
-LazySeq<T>::LazySeq(const Sequence<T>& seq) {
+LazySeq<T>::LazySeq(const MutableArraySequence<T>& seq) {
 	generator_ = new SequenceGenerator<T>(seq);
 	is_infinite_ = false;
 }
@@ -148,14 +148,9 @@ T LazySeq<T>::get(const Ordinal& index) const {
 	}
 
 	if (index.is_infinite()) {
-		auto* trans_gen = dynamic_cast<ITransfiniteGenerator<T>*>(generator_);
-		if (!trans_gen) {
-			throw std::logic_error("LazySeq: This sequence is finite and does not support transfinite indexing.");
-		}
-		return trans_gen->get_by_ordinal_index(index);
+		return generator_->get_by_ordinal(index);
 	}
-
-	int target_index = index.get_finite_part();
+	std::size_t target_index = index.get_finite_part();
 	if (target_index >= cache_.get_size()) {
 		evaluate_up_to(target_index);
 	}
@@ -191,4 +186,24 @@ LazySeq<T>* LazySeq<T>::concat(const LazySeq<T>& other) const {
 template <typename T>
 bool LazySeq<T>:: is_infinite() const {
     return is_infinite_;
+}
+
+template <typename T>
+LazySeq<T>* LazySeq<T>::insert_at(const T& element, const Ordinal& index) const {
+	if (generator_ == nullptr) {
+		throw std::logic_error("insert_at: generator cannot be nullptr");
+	}
+
+	InsertAtGenerator<T>* insert_gen = new InsertAtGenerator<T>(this->generator_, element, index);
+	return new LazySeq<T>(insert_gen);
+}
+
+template <typename T>
+LazySeq<T>* LazySeq<T>::insert_at(const T& element, int index) {
+	if (index < 0) {
+		throw std::out_of_range("Index cannot be negative");
+	}
+
+	InsertAtGenerator<T>* insert_gen = new InsertAtGenerator<T>(this->generator_, element, Ordinal(index));
+	return new LazySeq<T>(insert_gen);
 }

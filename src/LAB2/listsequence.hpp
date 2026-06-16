@@ -5,16 +5,16 @@
 #include "ienumerator.hpp"
 
 template <typename T>
-class ListSequence : public Sequence<T> {
+class ListSequence : public Sequence_LAB_2<T> {
 protected:
     LinkedList<T>* items;
 
     virtual ListSequence<T>* instance() = 0;
 
-    Sequence<T>* append_internal(const T& item);
-    Sequence<T>* prepend_internal(const T& item);
-    Sequence<T>* insert_at_internal(const T& item, int index);
-    Sequence<T>* remove_at_internal(int index);
+    Sequence_LAB_2<T>* append_internal(const T& item);
+    Sequence_LAB_2<T>* prepend_internal(const T& item);
+    Sequence_LAB_2<T>* insert_at_internal(const T& item, int index);
+    Sequence_LAB_2<T>* remove_at_internal(int index);
 
 public:
     template <typename U, typename SeqType>
@@ -33,10 +33,10 @@ public:
     virtual const T& get_first() const;
     virtual const T& get_last() const;
 
-    virtual Sequence<T>* remove_at(int index) override;
-    virtual Sequence<T>* append(const T& item) override;
-    virtual Sequence<T>* prepend(const T& item) override;
-    virtual Sequence<T>* insert_at(const T& item, int index) override;
+    virtual Sequence_LAB_2<T>* remove_at(int index) override;
+    virtual Sequence_LAB_2<T>* append(const T& item) override;
+    virtual Sequence_LAB_2<T>* prepend(const T& item) override;
+    virtual Sequence_LAB_2<T>* insert_at(const T& item, int index) override;
 };
 
 #include "listsequence.tpp"

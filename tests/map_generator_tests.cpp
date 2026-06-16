@@ -30,10 +30,10 @@ TEST(MapGeneratorTest, FiniteSequenceMapping) {
     EXPECT_FALSE(gen.has_next());
     EXPECT_THROW(gen.get_next(), std::out_of_range);
 
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(0)), 20);
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(1)), 40);
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(2)), 60);
-    EXPECT_THROW(gen.get_by_ordinal_index(Ordinal(3)), std::out_of_range);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(0)), 20);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(1)), 40);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(2)), 60);
+    EXPECT_THROW(gen.get_by_ordinal(Ordinal(3)), std::out_of_range);
 }
 
 TEST(MapGeneratorTest, TransfiniteSequenceMapping) {
@@ -46,11 +46,11 @@ TEST(MapGeneratorTest, TransfiniteSequenceMapping) {
 
     EXPECT_TRUE(gen.has_next());
 
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal(50)), 150);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal(50)), 150);
 
-    EXPECT_EQ(gen.get_by_ordinal_index(Ordinal::omega()), 600);
+    EXPECT_EQ(gen.get_by_ordinal(Ordinal::omega()), 600);
 
-    EXPECT_THROW(gen.get_by_ordinal_index(Ordinal::omega() + Ordinal(1)), std::out_of_range);
+    EXPECT_THROW(gen.get_by_ordinal(Ordinal::omega() + Ordinal(1)), std::out_of_range);
 
     delete transfinite_source;
 }
@@ -63,7 +63,7 @@ TEST(MapGeneratorTest, CloneBehavior) {
     IGenerator<int>* cloned_gen = gen.clone();
 
     EXPECT_EQ(cloned_gen->length(), Ordinal(1));
-    EXPECT_EQ(static_cast<MapGenerator<int>*>(cloned_gen)->get_by_ordinal_index(Ordinal(0)), 10);
+    EXPECT_EQ(static_cast<MapGenerator<int>*>(cloned_gen)->get_by_ordinal(Ordinal(0)), 10);
 
     delete cloned_gen;
 }

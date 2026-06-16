@@ -23,6 +23,10 @@ struct TestInfiniteGen : public IGenerator<int> {
     IGenerator<int>* clone() const override {
         return new TestInfiniteGen(value);
     }
+
+    int get_by_ordinal(const Ordinal& index) const override {
+        throw std::logic_error("get_by_ordinal is not implemented for this test mock");
+    }
 };
 
 

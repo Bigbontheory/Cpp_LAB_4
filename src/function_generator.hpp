@@ -41,6 +41,17 @@ public:
 	FunctionGenerator<T>* clone() const override {
 		return new FunctionGenerator<T>(*this);
 	}
+
+	T get_by_ordinal(const Ordinal& index) const override {
+		if (length_.is_infinite() || index.is_infinite()) {
+			throw std::logic_error("FunctionGenerator: random access is not supported if the sequence or index is infinite.");
+		}
+		std::size_t target_index = index.get_finite_part();
+		if (target_index >= static_cast<std::size_t>(length_.get_value())) {
+			throw std::out_of_range("FunctionGenerator: index out of range.");
+		}
+		return func_(target_index);
+	}
 };
 
 

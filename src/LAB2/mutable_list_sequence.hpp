@@ -14,7 +14,7 @@ public:
     MutableListSequence(const LinkedList<T>& list) : ListSequence<T>(list) {}
     MutableListSequence(const ListSequence<T>& seq) : ListSequence<T>(seq) {}
 
-    virtual Sequence<T>* clone() const override {
+    virtual Sequence_LAB_2<T>* clone() const override {
         return new MutableListSequence<T>(*this);
     }
 

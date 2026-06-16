@@ -4,7 +4,7 @@
 #include "sequence.hpp"
 
 template <typename T>
-Sequence<T>* Sequence<T>::map(T(*mapper)(const T& elem)) const {
+Sequence_LAB_2<T>* Sequence_LAB_2<T>::map(T(*mapper)(const T& elem)) const {
     ISequenceBuilder<T>* builder = this->create_builder();
     IEnumerator<T>* it = this->get_enumerator();
 
@@ -12,7 +12,7 @@ Sequence<T>* Sequence<T>::map(T(*mapper)(const T& elem)) const {
         while (it->move_next()) {
             builder->append(mapper(it->get_current()));
         }
-        Sequence<T>* result = builder->build();
+        Sequence_LAB_2<T>* result = builder->build();
         delete it;
         delete builder;
         return result;
@@ -25,7 +25,7 @@ Sequence<T>* Sequence<T>::map(T(*mapper)(const T& elem)) const {
 }
 
 template <typename T>
-Sequence<T>* Sequence<T>::where(bool (*predicate)(const T&)) const {
+Sequence_LAB_2<T>* Sequence_LAB_2<T>::where(bool (*predicate)(const T&)) const {
     ISequenceBuilder<T>* builder = this->create_builder();
     IEnumerator<T>* it = this->get_enumerator();
 
@@ -36,7 +36,7 @@ Sequence<T>* Sequence<T>::where(bool (*predicate)(const T&)) const {
                 builder->append(item);
             }
         }
-        Sequence<T>* result = builder->build();
+        Sequence_LAB_2<T>* result = builder->build();
         delete it;
         delete builder;
         return result;
@@ -49,7 +49,7 @@ Sequence<T>* Sequence<T>::where(bool (*predicate)(const T&)) const {
 }
 
 template <typename T>
-Sequence<T>* Sequence<T>::get_subsequence(int start_index, int end_index) const {
+Sequence_LAB_2<T>* Sequence_LAB_2<T>::get_subsequence(int start_index, int end_index) const {
     int len = this->get_size();
     if (start_index < 0 || start_index >= len || end_index < 0 || end_index >= len || start_index > end_index) {
         throw std::out_of_range("GetSubsequence: index out of range");
@@ -68,7 +68,7 @@ Sequence<T>* Sequence<T>::get_subsequence(int start_index, int end_index) const 
             if (current_index > end_index) break;
             current_index++;
         }
-        Sequence<T>* result = builder->build();
+        Sequence_LAB_2<T>* result = builder->build();
         delete it;
         delete builder;
         return result;
@@ -81,7 +81,7 @@ Sequence<T>* Sequence<T>::get_subsequence(int start_index, int end_index) const 
 }
 
 template <typename T>
-Sequence<T>* Sequence<T>::concat(const Sequence<T>* other) const {
+Sequence_LAB_2<T>* Sequence_LAB_2<T>::concat(const Sequence_LAB_2<T>* other) const {
     if (!other) return this->clone();
 
     ISequenceBuilder<T>* builder = this->create_builder();
@@ -102,7 +102,7 @@ Sequence<T>* Sequence<T>::concat(const Sequence<T>* other) const {
         delete it2;
         it2 = nullptr;
 
-        Sequence<T>* result = builder->build();
+        Sequence_LAB_2<T>* result = builder->build();
         delete builder;
         return result;
     }
@@ -115,7 +115,7 @@ Sequence<T>* Sequence<T>::concat(const Sequence<T>* other) const {
 }
 
 template <class T>
-Option<T> Sequence<T>::try_get(int index) const {
+Option<T> Sequence_LAB_2<T>::try_get(int index) const {
     if (index < 0 || index >= this->get_size()) {
         return Option<T>();
     }
@@ -123,11 +123,11 @@ Option<T> Sequence<T>::try_get(int index) const {
 }
 
 template <class T>
-Option<T> Sequence<T>::try_get_first() const {
+Option<T> Sequence_LAB_2<T>::try_get_first() const {
     return this->try_get(0);
 }
 
 template <class T>
-Option<T> Sequence<T>::try_get_last() const {
+Option<T> Sequence_LAB_2<T>::try_get_last() const {
     return this->try_get(this->get_size() - 1);
 }

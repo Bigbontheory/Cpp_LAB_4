@@ -5,15 +5,15 @@
 #include "sequence.hpp"
 
 template <typename T>
-class ArraySequence : public Sequence<T> {
+class ArraySequence : public Sequence_LAB_2<T> {
 protected:
     DynamicArray<T>* items;
     virtual ArraySequence<T>* instance() = 0;
 
-    Sequence<T>* append_internal(const T& item);
-    Sequence<T>* prepend_internal(const T& item);
-    Sequence<T>* insert_at_internal(const T& item, int index);
-    Sequence<T>* remove_at_internal(int index);
+    Sequence_LAB_2<T>* append_internal(const T& item);
+    Sequence_LAB_2<T>* prepend_internal(const T& item);
+    Sequence_LAB_2<T>* insert_at_internal(const T& item, int index);
+    Sequence_LAB_2<T>* remove_at_internal(int index);
 
 public:
     
@@ -33,10 +33,10 @@ public:
     const T& get(int index) const override;
     int get_size() const override;
 
-    Sequence<T>* append(const T& item) override;
-    Sequence<T>* prepend(const T& item) override;
-    Sequence<T>* insert_at(const T& item, int index) override;
-    Sequence<T>* remove_at(int index) override;
+    Sequence_LAB_2<T>* append(const T& item) override;
+    Sequence_LAB_2<T>* prepend(const T& item) override;
+    Sequence_LAB_2<T>* insert_at(const T& item, int index) override;
+    Sequence_LAB_2<T>* remove_at(int index) override;
 
     IEnumerator<T>* get_enumerator() const override;
 };

@@ -1,14 +1,14 @@
 #pragma once
 
 #include <stdexcept>
-#include "i_transfinite_generator.hpp"
+#include "i_generator.hpp"
 #include "ordinal.hpp"
 
 template <class T>
 class LazySeq;
 
 template <class T>
-class ConcatGenerator : public ITransfiniteGenerator<T> {
+class ConcatGenerator : public IGenerator<T> {
 private:
     const LazySeq<T>& first_;
     const LazySeq<T>& second_;
@@ -27,7 +27,7 @@ public:
 
     Ordinal length() const override { return total_len_; }
 
-    bool has_next() const override { // учесть, что последовательность может быть потенциально беск.
+    bool has_next() const override { // учесть, что последовательность может быть потенциально беск
         if (total_len_.is_infinite()) return true;
         return pos_ < total_len_.get_finite_part();
     }
@@ -35,12 +35,12 @@ public:
     T get_next() override {
         if (!has_next()) throw std::out_of_range("concat_generator: out of bounds");
 
-        T val = get_by_ordinal_index(Ordinal(pos_));
+        T val = get_by_ordinal(Ordinal(pos_));
         pos_++;
         return val;
     }
 
-    T get_by_ordinal_index(const Ordinal& index) const override {
+    T get_by_ordinal(const Ordinal& index) const override {
         if (index >= total_len_) {
             throw std::out_of_range("concat_generator: index out of bounds");
         }

@@ -7,14 +7,14 @@
 #include "immutable_list_sequence.hpp"
 
 const int MAX_SEQS = 50;
-Sequence<int>* registry[MAX_SEQS];
+Sequence_LAB_2<int>* registry[MAX_SEQS];
 int registry_count = 0;
 
 int map_square(const int& x) { return x * x; }
 bool where_positive(const int& x) { return x > 0; }
 int reduce_sum(const int& a, const int& b) { return a + b; }
 
-void print_sequence(Sequence<int>* seq) {
+void print_sequence(Sequence_LAB_2<int>* seq) {
     if (!seq) return;
     IEnumerator<int>* it = seq->get_enumerator();
     std::cout << "[ ";
@@ -25,7 +25,7 @@ void print_sequence(Sequence<int>* seq) {
     delete it;
 }
 
-void add_to_registry(Sequence<int>* seq) {
+void add_to_registry(Sequence_LAB_2<int>* seq) {
     if (registry_count < MAX_SEQS) {
         registry[registry_count] = seq;
         registry_count++;
@@ -52,7 +52,7 @@ void create_ui() {
         std::cin >> temp[i];
     }
 
-    Sequence<int>* new_seq = nullptr;
+    Sequence_LAB_2<int>* new_seq = nullptr;
     if (type == 1)      new_seq = new MutableArraySequence<int>(temp, count);
     else if (type == 2) new_seq = new ImmutableArraySequence<int>(temp, count);
     else if (type == 3) new_seq = new MutableListSequence<int>(temp, count);
@@ -72,7 +72,7 @@ void operations_ui() {
     int idx; std::cin >> idx;
     if (idx < 1 || idx > registry_count) return;
 
-    Sequence<int>* current = registry[idx - 1];
+    Sequence_LAB_2<int>* current = registry[idx - 1];
     std::cout << "\nSelected: "; print_sequence(current);
 
     std::cout << "\n--- Elements ---      --- Mutations ---      --- Transformations ---\n";
@@ -82,7 +82,7 @@ void operations_ui() {
     std::cout << "Choice: ";
     int op; std::cin >> op;
 
-    Sequence<int>* result = nullptr;
+    Sequence_LAB_2<int>* result = nullptr;
 
     try {
         switch (op) {

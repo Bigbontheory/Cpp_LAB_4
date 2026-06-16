@@ -4,7 +4,7 @@
 #include "lazy_sequence.hpp"
 
 template <class T>
-class AppendGenerator : public ITransfiniteGenerator<T> {
+class AppendGenerator : public IGenerator<T> {
 private:
     const LazySeq<T>& source_;
     T* item_;
@@ -56,7 +56,7 @@ public:
         return new AppendGenerator<T>(source_, *item_);
     }
 
-    T get_by_ordinal_index(const Ordinal& index) const override {
+    T get_by_ordinal(const Ordinal& index) const override {
         if (index < source_length_) {
             return source_.get(index);
         }
