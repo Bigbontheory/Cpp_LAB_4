@@ -5,9 +5,7 @@
 #include "streams/sequence_input_stream.hpp"
 #include "streams/sequence_output_stream.hpp"
 
-// ---------------------------------------------------------
-// Тесты Потока Ввода (SequenceInputStream)
-// ---------------------------------------------------------
+
 TEST(SequenceStreamsTest, InputStream_Navigation) {
     MutableArraySequence<int> seq;
     seq.append(10);
@@ -19,7 +17,6 @@ TEST(SequenceStreamsTest, InputStream_Navigation) {
     stream.open();
 
     EXPECT_FALSE(stream.is_end_of_stream());
-    // Сравниваем finite_part, так как operator== может отсутствовать
     EXPECT_EQ(stream.get_position().get_finite_part(), 0);
 
     EXPECT_EQ(stream.input(), 10);
