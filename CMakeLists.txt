@@ -32,7 +32,7 @@ add_executable(tests
     "tests/filter_generator_tests.cpp" 
     "tests/sequence_generator.cpp" 
     "tests/insert_at_tests.cpp"
- "tests/prepend_generator_tests.cpp" "tests/insert_at_seq_generator_tests.cpp" "tests/sequence_stream_tests.cpp" "tests/lazy_output_tests.cpp" "tests/lazy_input_tests.cpp")
+ "tests/prepend_generator_tests.cpp" "tests/insert_at_seq_generator_tests.cpp" "tests/sequence_stream_tests.cpp" "tests/lazy_output_tests.cpp" "tests/lazy_input_tests.cpp" "tests/replace_at_generator_tests.cpp")
 
 # Связываем тесты с нашей библиотекой и gtest
 target_link_libraries(tests PRIVATE ordinal gtest_main)

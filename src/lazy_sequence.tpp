@@ -225,3 +225,9 @@ LazySeq<T>* LazySeq<T>::insert_at(const Ordinal& index, const LazySeq<T>& other)
 
 	return new LazySeq<T>(new_gen);
 }
+
+template <typename T>
+LazySeq<T>* LazySeq<T>::replace_at(const T& element, const Ordinal& index) const {
+	ReplaceAtGenerator<T> replacer(this->generator_, element, index);
+	return new LazySeq<T>(&replacer);
+}
