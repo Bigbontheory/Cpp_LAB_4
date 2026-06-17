@@ -112,13 +112,18 @@ const T& LazySeq<T>::get_first() const {
 template <typename T>
 const T& LazySeq<T>::get_last() const {
 	Ordinal len = get_ordinal_length();
-	if (len.get_finite_part() == 0) {
+	if (len.get_omega_count() == 0 && len.get_finite_part() == 0) {
 		throw std::out_of_range("LazySequence is empty");
 	}
-	int last_index = len.get_finite_part() - 1;
-	evaluate_up_to(last_index);
+	if (len.get_omega_count() > 0 && len.get_finite_part() == 0) {
+		throw std::logic_error("LazySequence ends at a limit ordinal (e.g., w): it has no last element.");
+	}
 
-	return cache_.get(last_index);
+	Ordinal last_ordinal_index = len;
+	--last_ordinal_index;
+
+
+	return this->get(last_ordinal_index);
 }
 
 template <typename T>
@@ -210,7 +215,6 @@ LazySeq<T>* LazySeq<T>::prepend (const T& element) {
 }
 
 template <typename T>
-
 LazySeq<T>* LazySeq<T>::insert_at(const Ordinal& index, const LazySeq<T>& other) const {
 
 	if (index > this->get_ordinal_length()) {

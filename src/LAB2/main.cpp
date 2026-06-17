@@ -1,159 +1,256 @@
+```cpp
 #include <iostream>
+#include <vector>
+#include <sstream>
+#include <string>
 
-#include "sequence.hpp"
-#include "mutable_array_sequence.hpp"
-#include "immutable_array_sequence.hpp"
-#include "mutable_list_sequence.hpp"
-#include "immutable_list_sequence.hpp"
+#include "lazy_sequence.hpp"
+#include "ordinal.hpp"
 
-const int MAX_SEQS = 50;
-Sequence_LAB_2<int>* registry[MAX_SEQS];
-int registry_count = 0;
+using namespace std;
 
-int map_square(const int& x) { return x * x; }
-bool where_positive(const int& x) { return x > 0; }
-int reduce_sum(const int& a, const int& b) { return a + b; }
+struct Record {
+    int id;
+    LazySeq<int>* seq;
+    bool deleted;
+};
 
-void print_sequence(Sequence_LAB_2<int>* seq) {
-    if (!seq) return;
-    IEnumerator<int>* it = seq->get_enumerator();
-    std::cout << "[ ";
-    while (it->move_next()) {
-        std::cout << it->get_current() << " ";
-    }
-    std::cout << "]";
-    delete it;
-}
+class UI {
+private:
+    vector<Record> data;
+    int next_id = 0;
 
-void add_to_registry(Sequence_LAB_2<int>* seq) {
-    if (registry_count < MAX_SEQS) {
-        registry[registry_count] = seq;
-        registry_count++;
-        std::cout << "  -> Saved as ID " << registry_count << "\n";
-    }
-    else {
-        std::cout << "  [!] Registry is full!\n";
-    }
-}
+public:
 
-void create_ui() {
-    std::cout << "\n--- Create New Sequence ---\n";
-    std::cout << "1. Mutable Array      2. Immutable Array\n";
-    std::cout << "3. Mutable List       4. Immutable List\n";
-    std::cout << "Choice: ";
-    int type; std::cin >> type;
+    // =======================
+    // helpers
+    // =======================
 
-    std::cout << "How many elements to enter? ";
-    int count; std::cin >> count;
-
-    int* temp = new int[count];
-    for (int i = 0; i < count; i++) {
-        std::cout << "  [" << i << "]: ";
-        std::cin >> temp[i];
+    LazySeq<int>* get_seq(int id) {
+        if (id < 0 || id >= data.size() || data[id].deleted) {
+            throw runtime_error("Invalid ID");
+        }
+        return data[id].seq;
     }
 
-    Sequence_LAB_2<int>* new_seq = nullptr;
-    if (type == 1)      new_seq = new MutableArraySequence<int>(temp, count);
-    else if (type == 2) new_seq = new ImmutableArraySequence<int>(temp, count);
-    else if (type == 3) new_seq = new MutableListSequence<int>(temp, count);
-    else if (type == 4) new_seq = new ImmutableListSequence<int>(temp, count);
-
-    delete[] temp;
-    if (new_seq) add_to_registry(new_seq);
-}
-
-void operations_ui() {
-    if (registry_count == 0) {
-        std::cout << "Create an object first!\n";
-        return;
+    int add(LazySeq<int>* seq) {
+        data.push_back({ next_id, seq, false });
+        return next_id++;
     }
 
-    std::cout << "\nEnter ID (1-" << registry_count << "): ";
-    int idx; std::cin >> idx;
-    if (idx < 1 || idx > registry_count) return;
+    Ordinal read_ordinal() {
+        size_t omega, finite;
+        cout << "omega_count finite_part: ";
+        cin >> omega >> finite;
+        return Ordinal(omega, finite);
+    }
 
-    Sequence_LAB_2<int>* current = registry[idx - 1];
-    std::cout << "\nSelected: "; print_sequence(current);
+    // =======================
+    // create finite
+    // =======================
 
-    std::cout << "\n--- Elements ---      --- Mutations ---      --- Transformations ---\n";
-    std::cout << "1. Get(index)         4. Append              7. Map (x^2)\n";
-    std::cout << "2. Get First/Last     5. Prepend             8. Where (>0)\n";
-    std::cout << "3. Get Size           6. Remove At           9. Reduce (Sum)\n";
-    std::cout << "Choice: ";
-    int op; std::cin >> op;
+    void create_array() {
+        cout << "Enter numbers: ";
+        cin.ignore();
 
-    Sequence_LAB_2<int>* result = nullptr;
+        string line;
+        getline(cin, line);
 
-    try {
-        switch (op) {
-        case 1: {
-            int i; std::cout << "Index: "; std::cin >> i;
-            std::cout << "Result: " << current->get(i) << "\n";
-            break;
-        }
-        case 2: {
-            std::cout << "First: " << current->get_first() << "\n";
-            std::cout << "Last: " << current->get_last() << "\n";
-            break;
-        }
-        case 3: {
-            std::cout << "Size: " << current->get_size() << "\n";
-            break;
-        }
-        case 4: {
-            int val; std::cout << "Value: "; std::cin >> val;
-            result = current->append(val);
-            break;
-        }
-        case 5: {
-            int val; std::cout << "Value: "; std::cin >> val;
-            result = current->prepend(val);
-            break;
-        }
-        case 6: {
-            int i; std::cout << "Index to remove: "; std::cin >> i;
-            result = current->remove_at(i);
-            break;
-        }
-        case 7: result = current->map(map_square); break;
-        case 8: result = current->where(where_positive); break;
-        case 9: {
-            std::cout << "Sum: " << current->reduce(reduce_sum, 0) << "\n";
-            break;
-        }
-        default: std::cout << "Invalid operation!\n";
+        stringstream ss(line);
+        vector<int> temp;
+
+        int x;
+        while (ss >> x) temp.push_back(x);
+
+        if (temp.empty()) {
+            cout << "Empty\n";
+            return;
         }
 
-        if (result && result != current) {
-            std::cout << "Operation created a new object.\n";
-            add_to_registry(result);
+        int* arr = new int[temp.size()];
+        for (int i = 0; i < temp.size(); i++) {
+            arr[i] = temp[i];
         }
-        else if (result == current) {
-            std::cout << "Object modified in-place.\n";
+
+        auto seq = new LazySeq<int>(arr, temp.size());
+        cout << "Created ID = " << add(seq) << "\n";
+    }
+
+    // =======================
+    // create ω naturals
+    // =======================
+
+    static int naturals_func(size_t i) {
+        return (int)i;
+    }
+
+    void create_naturals() {
+        auto seq = new LazySeq<int>(naturals_func, Ordinal::omega());
+        cout << "Naturals (ω) ID = " << add(seq) << "\n";
+    }
+
+    // =======================
+    // append
+    // =======================
+
+    void append() {
+        int id, value;
+        cout << "Seq ID: ";
+        cin >> id;
+
+        cout << "Value: ";
+        cin >> value;
+
+        try {
+            auto seq = get_seq(id);
+            auto new_seq = seq->append(value);
+
+            cout << "New ID = " << add(new_seq) << "\n";
+        }
+        catch (exception& e) {
+            cout << "Error: " << e.what() << "\n";
         }
     }
-    catch (const std::exception& e) {
-        std::cout << "Exception: " << e.what() << "\n";
+
+    // =======================
+    // get int
+    // =======================
+
+    void get_int() {
+        int id, index;
+        cout << "Seq ID: ";
+        cin >> id;
+
+        cout << "Index: ";
+        cin >> index;
+
+        try {
+            auto seq = get_seq(id);
+            cout << "Value = " << seq->get(index) << "\n";
+        }
+        catch (exception& e) {
+            cout << "Error: " << e.what() << "\n";
+        }
     }
-}
+
+    // =======================
+    // get ordinal
+    // =======================
+
+    void get_ord() {
+        int id;
+        cout << "Seq ID: ";
+        cin >> id;
+
+        try {
+            auto seq = get_seq(id);
+            Ordinal ord = read_ordinal();
+
+            cout << "Value = " << seq->get(ord) << "\n";
+        }
+        catch (exception& e) {
+            cout << "Error: " << e.what() << "\n";
+        }
+    }
+
+    // =======================
+    // length
+    // =======================
+
+    void length() {
+        int id;
+        cout << "Seq ID: ";
+        cin >> id;
+
+        try {
+            auto seq = get_seq(id);
+            cout << "Length = " << seq->get_ordinal_length() << "\n";
+        }
+        catch (exception& e) {
+            cout << "Error: " << e.what() << "\n";
+        }
+    }
+
+    // =======================
+    // print prefix
+    // =======================
+
+    void print_prefix() {
+        int id, n;
+        cout << "Seq ID: ";
+        cin >> id;
+
+        cout << "Count: ";
+        cin >> n;
+
+        try {
+            auto seq = get_seq(id);
+
+            for (int i = 0; i < n; i++) {
+                cout << seq->get(i) << " ";
+            }
+            cout << "\n";
+        }
+        catch (exception& e) {
+            cout << "Error: " << e.what() << "\n";
+        }
+    }
+
+    // =======================
+    // list
+    // =======================
+
+    void list() {
+        cout << "\n=== SEQUENCES ===\n";
+        for (auto& r : data) {
+            if (!r.deleted) {
+                cout << "ID: " << r.id
+                    << " | length: " << r.seq->get_ordinal_length()
+                    << " | infinite: " << (r.seq->is_infinite() ? "yes" : "no")
+                    << "\n";
+            }
+        }
+    }
+
+    // =======================
+    // main loop
+    // =======================
+
+    void run() {
+        while (true) {
+            cout << "\n=== MENU ===\n";
+            cout << "1. Create finite sequence\n";
+            cout << "2. Create naturals (ω)\n";
+            cout << "3. List\n";
+            cout << "4. Append\n";
+            cout << "5. Get (int)\n";
+            cout << "6. Get (ordinal)\n";
+            cout << "7. Length\n";
+            cout << "8. Print prefix\n";
+            cout << "0. Exit\n";
+
+            int cmd;
+            cin >> cmd;
+
+            switch (cmd) {
+            case 1: create_array(); break;
+            case 2: create_naturals(); break;
+            case 3: list(); break;
+            case 4: append(); break;
+            case 5: get_int(); break;
+            case 6: get_ord(); break;
+            case 7: length(); break;
+            case 8: print_prefix(); break;
+            case 0: return;
+            default: cout << "Unknown\n";
+            }
+        }
+    }
+};
 
 int main() {
-    int choice = -1;
-    while (choice != 0) {
-        std::cout << "\n=== MAIN MENU (Objects: " << registry_count << ") ===\n";
-        for (int i = 0; i < registry_count; i++) {
-            std::cout << i + 1 << ". ";
-            print_sequence(registry[i]);
-            std::cout << "\n";
-        }
-        std::cout << "--------------------\n";
-        std::cout << "1. Create   2. Operation   0. Exit\n> ";
-        std::cin >> choice;
-
-        if (choice == 1) create_ui();
-        else if (choice == 2) operations_ui();
-    }
-
-    for (int i = 0; i < registry_count; i++) delete registry[i];
+    UI ui;
+    ui.run();
     return 0;
 }
+```

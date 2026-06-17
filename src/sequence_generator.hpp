@@ -9,12 +9,12 @@
 template <typename T>
 class SequenceGenerator : public IGenerator<T> {
 private:
-    const MutableArraySequence<T>* source_;
+    const MutableArraySequence<T> source_;
     std::size_t current_index_;
 
 public:
     explicit SequenceGenerator(const MutableArraySequence<T>& source)
-        : source_(&source), current_index_(0) {
+        : source_(source), current_index_(0) {
     }
 
     SequenceGenerator(const SequenceGenerator<T>& other)
@@ -32,14 +32,14 @@ public:
     ~SequenceGenerator() = default;
 
     bool has_next() const override {
-        return current_index_ < source_->get_size();
+        return current_index_ < source_.get_size();
     }
 
     T get_next() override {
         if (!has_next()) {
             throw std::out_of_range("SequenceGenerator: index out of range");
         }
-        return source_->get(current_index_++);
+        return source_.get(current_index_++);
     }
 
     IGenerator<T>* clone() const override {
@@ -47,7 +47,7 @@ public:
     }
 
     Ordinal length() const override {
-        return Ordinal(0, source_->get_size());
+        return Ordinal(0, source_.get_size());
     }
 
     T get_by_ordinal(const Ordinal& index) const override {
@@ -56,10 +56,10 @@ public:
         }
 
         std::size_t target_index = index.get_finite_part();
-        if (target_index >= source_->get_size()) {
+        if (target_index >= source_.get_size()) {
             throw std::out_of_range("SequenceGenerator: index out of range.");
         }
-        return source_->get(target_index);
+        return source_.get(target_index);
     }
 
 };
