@@ -349,39 +349,3 @@ TEST(LazySeqInsertAtTest, IndexOutOfBoundsThrows) {
 char empty_tape(std::size_t index) {
     return '_';
 }
-
-
-TEST(LazySeqReplaceTest, ReplaceAtIntegrity) {
-    LazySeq<char> base_seq(empty_tape, Ordinal::omega());
-
-    LazySeq<char>* replaced_seq = base_seq.replace_at('X', Ordinal(10));
-
-    EXPECT_EQ(base_seq.get(0), '_');
-    EXPECT_EQ(base_seq.get(1), '_');
-
-    EXPECT_EQ(replaced_seq->get(Ordinal(10)), 'X');
-    EXPECT_EQ(replaced_seq->get(Ordinal(9)), '_');
-    EXPECT_EQ(replaced_seq->get(Ordinal(11)), '_');
-
-    delete replaced_seq;
-}
-
-TEST(LazySeqReplaceTest, ChainOfReplacements) {
-    LazySeq<char> base_seq(empty_tape, Ordinal::omega());
-
-    LazySeq<char>* step1 = base_seq.replace_at('A', Ordinal(0));
-    LazySeq<char>* step2 = step1->replace_at('B', Ordinal(1));
-
-    EXPECT_EQ(step2->get(Ordinal(0)), 'A');
-    EXPECT_EQ(step2->get(Ordinal(1)), 'B');
-    EXPECT_EQ(step2->get(Ordinal(2)), '_');
-
-    delete step1;
-    delete step2;
-}
-
-TEST(LazySeqReplaceTest, OutOfRange) {
-    LazySeq<char> base_seq(empty_tape, Ordinal(5));
-
-    EXPECT_THROW(base_seq.replace_at('X', Ordinal(5)), std::out_of_range);
-}

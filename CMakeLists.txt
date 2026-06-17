@@ -8,9 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(ordinal INTERFACE)
 target_include_directories(ordinal INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-add_library(turing_core STATIC "src/machine_state/machine_turing.cpp")
-target_link_libraries(turing_core PUBLIC ordinal)
-
 add_executable(Cpp_Lab_4 "src/main.cpp" "src/ordinal_print.cpp")
 target_link_libraries(Cpp_Lab_4 PRIVATE ordinal)
 
@@ -40,8 +37,7 @@ add_executable(tests
     "tests/sequence_stream_tests.cpp" 
     "tests/lazy_output_tests.cpp" 
     "tests/lazy_input_tests.cpp" 
-    "tests/replace_at_generator_tests.cpp"
-)
+ "tests/statistics_tests.cpp")
 
 target_link_libraries(tests PRIVATE ordinal gtest_main)
 

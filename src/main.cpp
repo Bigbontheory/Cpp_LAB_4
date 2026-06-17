@@ -8,6 +8,9 @@
 #include "ordinal.hpp"
 #include "lazy_sequence.hpp"
 
+#include "streams/sequence_input_stream.hpp"
+#include "../statistics/statistics_processor.hpp"
+
 const int MAX_SEQUENCES = 20;
 
 int natural_numbers_rule(std::size_t index) {
@@ -68,6 +71,8 @@ void print_menu() {
     std::cout << "15. Concat Active Sequence with another Sequence\n";
     std::cout << "16. Prepend element to Active Sequence\n";
     std::cout << "17. Insert another Sequence at Ordinal index\n";
+    std::cout << "-----------------------------------------\n";
+    std::cout << "18. Calculate Stream Statistics for Active Sequence\n";
     std::cout << "0. Exit\n";
     std::cout << "=========================================\n";
     std::cout << "Choice: ";
@@ -419,6 +424,47 @@ int main() {
 
                 active_idx = sequence_count;
                 sequence_count++;
+                break;
+            }
+            case 18: {
+                if (active_idx == -1) {
+                    std::cout << "No active sequence selected! Please select or create one first.\n";
+                    break;
+                }
+
+                int window_size;
+                int count;
+
+                std::cout << "Enter median window size: ";
+                std::cin >> window_size;
+
+                std::cout << "Enter number of elements to process: ";
+                std::cin >> count;
+
+                if (window_size <= 0 || count <= 0) {
+                    throw std::invalid_argument("Window size and count must be greater than 0");
+                }
+
+                SequenceInputStream<int> stream(sequences[active_idx]);
+                stream.open();
+
+                StatisticsProcessor<int> processor(&stream, window_size);
+
+                std::cout << "\n--- Stream Statistics Pipeline ---\n";
+                for (int i = 0; i < count; ++i) {
+                    processor.process_next();
+
+                    std::cout << "Element [" << i << "]: " << sequences[active_idx]->get(i) << "\n";
+                    std::cout << "  Count:   " << processor.get_count() << "\n";
+                    std::cout << "  Average: " << processor.get_average() << "\n";
+                    std::cout << "  Median:  " << processor.get_median() << "\n";
+                    std::cout << "  Min:     " << processor.get_min() << "\n";
+                    std::cout << "  Max:     " << processor.get_max() << "\n";
+                    std::cout << "----------------------------------\n";
+                }
+
+                stream.close();
+                std::cout << "-> Statistics processing complete.\n";
                 break;
             }
             case 0: {

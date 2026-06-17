@@ -15,7 +15,6 @@ LazySeq<T>::LazySeq(const LazySeq<T>& other)
 	: is_infinite_(other.is_infinite_)
 {
 	this->cache_ = MutableArraySequence<T>(other.cache_);
-
 	if (other.generator_ != nullptr) {
 		this->generator_ = other.generator_->clone();
 	}
@@ -228,10 +227,4 @@ LazySeq<T>* LazySeq<T>::insert_at(const Ordinal& index, const LazySeq<T>& other)
 	);
 
 	return new LazySeq<T>(new_gen);
-}
-
-template <typename T>
-LazySeq<T>* LazySeq<T>::replace_at(const T& element, const Ordinal& index) const {
-	ReplaceAtGenerator<T> replacer(this->generator_, element, index);
-	return new LazySeq<T>(&replacer);
 }

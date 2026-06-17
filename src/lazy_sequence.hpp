@@ -29,6 +29,7 @@ public:
 	IGenerator<T>* get_generator() const {
 		return generator_;
 	}
+
 	void evaluate_up_to(int index) const;
 	LazySeq();
 	LazySeq(T* items, int count);
@@ -55,7 +56,6 @@ public:
 	T get(const Ordinal& index) const;
 	const Ordinal get_ordinal_length() const;
 
-	LazySeq<T>* replace_at(const T& element, const Ordinal& index) const;
 	LazySeq<T>* insert_at(const Ordinal& index, const LazySeq<T>& other) const;
 	LazySeq<T>* prepend(const T& element) override;
 	LazySeq<T>* map(T(*func)(const T&)) const;

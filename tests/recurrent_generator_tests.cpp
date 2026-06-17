@@ -32,7 +32,7 @@ TEST(RecurrentGeneratorTest, ThrowsOnExhaustion) {
 
     RecurrentGenerator<int> gen(init_seq, double_rule, Ordinal(1));
 
-    gen.get_next(); 
+    gen.get_next();
     EXPECT_THROW(gen.get_next(), std::out_of_range);
 }
 
