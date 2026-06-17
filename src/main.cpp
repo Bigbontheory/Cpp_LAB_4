@@ -8,7 +8,7 @@
 #include "ordinal.hpp"
 #include "lazy_sequence.hpp"
 
-#include "streams/sequence_input_stream.hpp"
+#include "streams/lazy_input_streams.hpp"
 #include "../statistics/statistics_processor.hpp"
 
 const int MAX_SEQUENCES = 20;
@@ -427,8 +427,8 @@ int main() {
                 break;
             }
             case 18: {
-                if (active_idx == -1) {
-                    std::cout << "No active sequence selected! Please select or create one first.\n";
+                if (active_idx == -1 || sequences[active_idx] == nullptr) {
+                    std::cout << "[ERROR]: No active sequence selected! Please select or create one first.\n";
                     break;
                 }
 
@@ -442,37 +442,40 @@ int main() {
                 std::cin >> count;
 
                 if (window_size <= 0 || count <= 0) {
-                    throw std::invalid_argument("Window size and count must be greater than 0");
+                    std::cout << "[ERROR]: Window size and count must be greater than 0!\n";
+                    break;
                 }
-
-                SequenceInputStream<int> stream(sequences[active_idx]);
-                stream.open();
-
-                StatisticsProcessor<int> processor(&stream, window_size);
 
                 std::cout << "\n--- Stream Statistics Pipeline ---\n";
-                for (int i = 0; i < count; ++i) {
-                    processor.process_next();
 
-                    std::cout << "Element [" << i << "]: " << sequences[active_idx]->get(i) << "\n";
-                    std::cout << "  Count:   " << processor.get_count() << "\n";
-                    std::cout << "  Average: " << processor.get_average() << "\n";
-                    std::cout << "  Median:  " << processor.get_median() << "\n";
-                    std::cout << "  Min:     " << processor.get_min() << "\n";
-                    std::cout << "  Max:     " << processor.get_max() << "\n";
-                    std::cout << "----------------------------------\n";
+                try {
+                    LazyInputStream<int> stream(sequences[active_idx]);
+                    stream.open();
+                    StatisticsProcessor<int> processor(&stream, window_size);
+                    for (int i = 0; i < count; ++i) {
+                        try {
+                            processor.process_next();
+                            std::cout << "Step [" << i + 1 << "]:\n";
+                            std::cout << "  Count:   " << processor.get_count() << "\n";
+                            std::cout << "  Average: " << processor.get_average() << "\n";
+                            std::cout << "  Median:  " << processor.get_median() << "\n";
+                            std::cout << "  Min:     " << processor.get_min() << "\n";
+                            std::cout << "  Max:     " << processor.get_max() << "\n";
+                            std::cout << "----------------------------------\n";
+                        }
+                        catch (const std::out_of_range& e) {
+                            std::cout << "\n[Stream ended gracefully]: " << e.what() << " (Total elements processed: " << i << ")\n";
+                            break;
+                        }
+                    }
+
+                    stream.close();
+                }
+                catch (const std::exception& e) {
+                    std::cout << "\n[ERROR]: Pipeline execution failed: " << e.what() << "\n";
                 }
 
-                stream.close();
-                std::cout << "-> Statistics processing complete.\n";
-                break;
-            }
-            case 0: {
-                std::cout << "Exiting...\n";
-                break;
-            }
-            default: {
-                std::cout << "Unknown command.\n";
+                std::cout << "> Statistics processing complete.\n";
                 break;
             }
             }
