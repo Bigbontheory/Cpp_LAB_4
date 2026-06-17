@@ -24,6 +24,10 @@ private:
 	bool is_infinite_;
 
 public:
+
+	IGenerator<T>* get_generator() const {
+		return generator_;
+	}
 	void evaluate_up_to(int index) const;
 	LazySeq();
 	LazySeq(T* items, int count);

@@ -170,7 +170,7 @@ LazySeq<T>* LazySeq<T>::where(bool (*predicate)(const T&)) const {
 
 template <typename T>
 LazySeq<T>* LazySeq<T>::concat(const LazySeq<T>& other) const {
-	IGenerator<T>* new_gen = new ConcatGenerator<T>(*this, other);
+	IGenerator<T>* new_gen = new ConcatGenerator<T>(this->get_generator(), other.get_generator());
 	return new LazySeq<T>(new_gen);
 }
 
