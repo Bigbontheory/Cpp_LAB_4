@@ -13,7 +13,7 @@
 #include "filter_generator.hpp"
 #include "insert_at_generator.hpp"
 #include "prepend_generator.hpp"
-
+#include "insert_at_seq_generator.hpp"
 
 
 template <typename T>
@@ -50,6 +50,7 @@ public:
 	T get(const Ordinal& index) const;
 	const Ordinal get_ordinal_length() const;
 
+	LazySeq<T>* insert_at(const Ordinal& index, const LazySeq<T>& other) const;
 	LazySeq<T>* prepend(const T& element) override;
 	LazySeq<T>* map(T(*func)(const T&)) const;
 	LazySeq<T>* where(bool (*predicate)(const T&)) const;

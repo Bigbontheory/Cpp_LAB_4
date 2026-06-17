@@ -1,6 +1,5 @@
 #include "concat_generator.hpp"
 #include "append_generator.hpp"
-#include "iostream"
 
 template<typename T>
 LazySeq<T>::LazySeq(T(*func)(std::size_t), Ordinal length) {
@@ -17,12 +16,8 @@ LazySeq<T>::LazySeq(const LazySeq<T>& other)
 {
 	this->cache_ = MutableArraySequence<T>(other.cache_);
 
-	// ВСТАВЬ ЭТО:
 	if (other.generator_ != nullptr) {
 		this->generator_ = other.generator_->clone();
-		// Смотрим, что получилось
-		std::cout << "DEBUG: Cache size: " << this->cache_.get_size()
-			<< ", Generator cloned: " << (this->generator_ != nullptr) << std::endl;
 	}
 	else {
 		this->generator_ = nullptr;
@@ -212,4 +207,21 @@ LazySeq<T>* LazySeq<T>::prepend (const T& element) {
 
 	PrependGenerator<T>* prepend_gen = new PrependGenerator<T>(this->generator_, element);
 	return new LazySeq<T>(prepend_gen);
+}
+
+template <typename T>
+
+LazySeq<T>* LazySeq<T>::insert_at(const Ordinal& index, const LazySeq<T>& other) const {
+
+	if (index > this->get_ordinal_length()) {
+		throw std::out_of_range("LazySeq::insert_at: index out of bounds");
+	}
+
+	InsertSeqAtGenerator<T>* new_gen = new InsertSeqAtGenerator<T>(
+		this->generator_,
+		other.generator_,
+		index
+	);
+
+	return new LazySeq<T>(new_gen);
 }

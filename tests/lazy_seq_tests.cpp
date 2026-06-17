@@ -23,21 +23,19 @@ int fibonacci_rule(const MutableArraySequence<int>& seq) {
 
 
 static inline int my_test_function(std::size_t idx) {
-    return static_cast<int>(idx); // 0, 1, 2, 3...
+    return static_cast<int>(idx);
 }
 
 TEST(LazySeqCoreTest, CloneMethodWithConstructor) {
     LazySeq<int> seq(my_test_function, Ordinal(5));
-    seq.get(Ordinal(2)); // Кэш оригинала: {0, 1, 2}
+    seq.get(Ordinal(2));
 
     LazySeq<int>* cloned = seq.clone();
 
-    // Проверяем, что клон знает про 2
     EXPECT_EQ(cloned->get(Ordinal(2)), 2);
 
-    // Проверяем, что клон может досчитать до 4
-    EXPECT_EQ(cloned->get(Ordinal(3)), 3); // Досчитал 3
-    EXPECT_EQ(cloned->get(Ordinal(4)), 4); // Досчитал 4
+    EXPECT_EQ(cloned->get(Ordinal(3)), 3);
+    EXPECT_EQ(cloned->get(Ordinal(4)), 4); 
 
     delete cloned;
 }
@@ -49,7 +47,6 @@ TEST(LazySeqCoreTest, CopyConstructorTest) {
 
     seq.get(Ordinal(2));
 
-    // Теперь копируем
     LazySeq<int> copy_seq(seq);
 
 
@@ -280,4 +277,71 @@ TEST(LazySeqHigherOrderTest, WhereThrowsOnNullptr) {
     LazySeq<int> seq(data, 1);
 
     EXPECT_THROW(seq.where(nullptr), std::invalid_argument);
+}
+
+
+TEST(LazySeqInsertAtTest, InsertInMiddle) {
+    int base_data[] = { 1, 2, 5, 6 };
+    int insert_data[] = { 3, 4 };
+
+    LazySeq<int> base(base_data, 4);
+    LazySeq<int> to_insert(insert_data, 2);
+
+    LazySeq<int>* result = base.insert_at(Ordinal(2), to_insert);
+
+    EXPECT_EQ(result->get_ordinal_length().get_finite_part(), 6);
+
+    EXPECT_EQ(result->get(0), 1);
+    EXPECT_EQ(result->get(1), 2);
+    EXPECT_EQ(result->get(2), 3);
+    EXPECT_EQ(result->get(3), 4);
+    EXPECT_EQ(result->get(4), 5);
+    EXPECT_EQ(result->get(5), 6);
+
+    delete result;
+}
+
+TEST(LazySeqInsertAtTest, InsertAtBegin) {
+    int base_data[] = { 10, 20 };
+    int insert_data[] = { 1, 2 };
+
+    LazySeq<int> base(base_data, 2);
+    LazySeq<int> to_insert(insert_data, 2);
+
+    LazySeq<int>* result = base.insert_at(Ordinal(0), to_insert);
+
+    EXPECT_EQ(result->get_ordinal_length().get_finite_part(), 4);
+    EXPECT_EQ(result->get(0), 1);
+    EXPECT_EQ(result->get(1), 2);
+    EXPECT_EQ(result->get(2), 10);
+    EXPECT_EQ(result->get(3), 20);
+
+    delete result;
+}
+
+
+TEST(LazySeqInsertAtTest, InsertAtEnd) {
+    int base_data[] = { 1, 2 };
+    int insert_data[] = { 3, 4 };
+
+    LazySeq<int> base(base_data, 2);
+    LazySeq<int> to_insert(insert_data, 2);
+
+    LazySeq<int>* result = base.insert_at(Ordinal(2), to_insert);
+
+    EXPECT_EQ(result->get_ordinal_length().get_finite_part(), 4);
+    EXPECT_EQ(result->get(0), 1);
+    EXPECT_EQ(result->get(1), 2);
+    EXPECT_EQ(result->get(2), 3);
+    EXPECT_EQ(result->get(3), 4);
+
+    delete result;
+}
+
+TEST(LazySeqInsertAtTest, IndexOutOfBoundsThrows) {
+    int data[] = { 1, 2 };
+    LazySeq<int> base(data, 2);
+    LazySeq<int> to_insert(data, 2);
+
+    EXPECT_THROW(base.insert_at(Ordinal(3), to_insert), std::out_of_range);
 }
