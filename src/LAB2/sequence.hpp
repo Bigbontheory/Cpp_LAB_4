@@ -24,7 +24,7 @@ public:
 };
 
 template<typename T>
-class Sequence_LAB_2 : public IEnumerable<T>, public ICollection<T> {
+class Sequence_LAB_2 : public IEnumerable<T>, public Sequence<T> {
 public:
 	virtual ~Sequence_LAB_2() {};
 
